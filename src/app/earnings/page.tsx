@@ -1,3 +1,5 @@
+"use client";
+
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
