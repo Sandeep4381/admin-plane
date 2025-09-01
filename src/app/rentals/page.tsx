@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
-import { Search, Car, TrendingUp, XCircle, Clock } from 'lucide-react';
+import { Search, Car, TrendingUp, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { RentalsTable, initialRentalsData, Rental } from './rentals-table';
 import { RentalDetailsDrawer } from './rental-details-drawer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -189,10 +189,10 @@ function RentalsPageContent() {
       
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total Rentals (Month)" value="1,284" icon={Car} />
-          <StatCard title="Total Revenue" value="₹2,54,800" icon={TrendingUp} />
-          <StatCard title="Cancellation Rate" value="5.8%" icon={XCircle} />
           <StatCard title="Active Rentals" value="42" icon={Clock} />
+          <StatCard title="Total Revenue" value="₹2,54,800" icon={TrendingUp} />
+          <StatCard title="Disputed Rentals" value="1" icon={AlertTriangle} />
+          <StatCard title="Cancellation Rate" value="5.8%" icon={XCircle} />
         </div>
         
         <Tabs value={tab} onValueChange={handleTabChange}>

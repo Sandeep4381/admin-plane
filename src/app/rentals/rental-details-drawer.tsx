@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, Calendar, User, Store, Car, MapPin, BadgeIndianRupee, CreditCard, MessageSquare, Shield, Check, Ban } from "lucide-react";
+import { AlertCircle, Calendar, User, Store, Car, MapPin, BadgeIndianRupee, CreditCard, MessageSquare, Shield, Check, Ban, XCircle } from "lucide-react";
 import type { Rental } from './rentals-table';
 import { cva } from 'class-variance-authority';
 
@@ -180,6 +180,9 @@ export function RentalDetailsDrawer({ rental, onOpenChange, onUpdateRental }: Re
                             </div>
                         </div>
                     )}
+                     {rental.disputeLog.status === 'resolved' && (
+                        <p className="text-sm pt-2"><span className="text-muted-foreground">Resolution:</span> Responsibility assigned to <span className="font-medium capitalize">{rental.disputeLog.resolvedBy}</span>.</p>
+                     )}
                 </div>
                 </>
             )}
