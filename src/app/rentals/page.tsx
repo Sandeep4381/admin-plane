@@ -1,13 +1,20 @@
+"use client";
+
+import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React from 'react';
 
-export default function RentalsPage() {
+function RentalsPageContent() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab') || 'active';
+  
   return (
     <DashboardLayout>
       <PageHeader title="Rentals" />
-      <Tabs defaultValue="active">
+      <Tabs defaultValue={tab}>
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
@@ -54,5 +61,14 @@ export default function RentalsPage() {
         </TabsContent>
       </Tabs>
     </DashboardLayout>
+  );
+}
+
+
+export default function RentalsPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <RentalsPageContent />
+    </React.Suspense>
   );
 }

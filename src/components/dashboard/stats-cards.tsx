@@ -4,11 +4,11 @@ import { Car, CheckCircle, FileX, Store, Users, Wallet, Hourglass } from "lucide
 
 const stats = [
     { title: "Total Shops", value: "1,250", icon: Store, href: "/shops" },
-    { title: "Verified Shops", value: "1,100", icon: CheckCircle, href: "/shops" },
+    { title: "Verified Shops", value: "1,100", icon: CheckCircle, href: "/shops?tab=verified" },
     { title: "Total Users", value: "15,840", icon: Users, href: "/users" },
-    { title: "Active Rentals", value: "320", icon: Hourglass, href: "/rentals" },
-    { title: "Completed Rentals", value: "25,480", icon: Car, href: "/rentals" },
-    { title: "Cancelled Rentals", value: "890", icon: FileX, href: "/cancellations" },
+    { title: "Active Rentals", value: "320", icon: Hourglass, href: "/rentals?tab=active" },
+    { title: "Completed Rentals", value: "25,480", icon: Car, href: "/rentals?tab=completed" },
+    { title: "Cancelled Rentals", value: "890", icon: FileX, href: "/rentals?tab=cancelled" },
     { title: "Platform Earnings", value: "$125,430", icon: Wallet, href: "/earnings" },
 ]
 
