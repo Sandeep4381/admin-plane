@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, CheckCircle } from "lucide-react";
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -165,6 +165,16 @@ function ShopsPageContent() {
     })
   };
 
+  const handleVerify = (shopId: string) => {
+    setShops(shops.map(shop => 
+      shop.id === shopId ? { ...shop, status: 'verified', verified: true } : shop
+    ));
+    toast({
+      title: "Shop Verified",
+      description: "The shop has been successfully verified and is now live.",
+    });
+  };
+
   const handleEditOpen = (shop: Shop) => {
     setEditingShop(shop);
     setIsEditDialogOpen(true);
@@ -238,49 +248,56 @@ function ShopsPageContent() {
             </TableCell>
             <TableCell className="capitalize">{shop.status}</TableCell>
             <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button aria-haspopup="true" size="icon" variant="ghost">
-                    <MoreHorizontal className="h-4 w-4" />
-                    <span className="sr-only">Toggle menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
-                  
-                  {shop.status !== 'blocked' && (
-                     <ActionDialog
-                        triggerText="Restrict"
-                        title="Are you sure you want to restrict this shop?"
-                        description="This action will limit the shop's visibility or functionality. Please provide a reason."
-                        onAction={(reason) => handleRestrict(shop.id, reason)}
-                      />
-                  )}
-                  
-                  {shop.status !== 'blocked' ? (
-                     <ActionDialog
-                        triggerText="Block"
-                        title="Are you sure you want to block this shop?"
-                        description="This action will prevent the shop from appearing in the app. Please provide a reason."
-                        onAction={(reason) => handleBlock(shop.id, reason)}
-                      />
-                  ) : (
-                    <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
-                  )}
-                  
-                  <DropdownMenuSeparator />
-                  
-                  <ActionDialog
-                    triggerText="Delete"
-                    title="Are you absolutely sure?"
-                    description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
-                    onAction={(reason) => handleDelete(shop.id, reason)}
-                    destructive={true}
-                  />
+              {shop.status === 'pending' ? (
+                <Button variant="outline" size="sm" onClick={() => handleVerify(shop.id)}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Verify
+                </Button>
+              ) : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button aria-haspopup="true" size="icon" variant="ghost">
+                      <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Toggle menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
+                    
+                    {shop.status !== 'blocked' && (
+                       <ActionDialog
+                          triggerText="Restrict"
+                          title="Are you sure you want to restrict this shop?"
+                          description="This action will limit the shop's visibility or functionality. Please provide a reason."
+                          onAction={(reason) => handleRestrict(shop.id, reason)}
+                        />
+                    )}
+                    
+                    {shop.status !== 'blocked' ? (
+                       <ActionDialog
+                          triggerText="Block"
+                          title="Are you sure you want to block this shop?"
+                          description="This action will prevent the shop from appearing in the app. Please provide a reason."
+                          onAction={(reason) => handleBlock(shop.id, reason)}
+                        />
+                    ) : (
+                      <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
+                    )}
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <ActionDialog
+                      triggerText="Delete"
+                      title="Are you absolutely sure?"
+                      description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
+                      onAction={(reason) => handleDelete(shop.id, reason)}
+                      destructive={true}
+                    />
 
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </TableCell>
           </TableRow>
         ))}
