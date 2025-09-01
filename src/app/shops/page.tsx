@@ -12,8 +12,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import React, { useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
-const initialShopsData = [
+type Shop = {
+  id: string;
+  name: string;
+  city: string;
+  owner: string;
+  verified: boolean;
+  status: 'verified' | 'pending' | 'blocked' | 'restricted';
+};
+
+const initialShopsData: Shop[] = [
   { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified' },
   { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified' },
   { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending' },
@@ -26,6 +38,8 @@ function ShopsPageContent() {
   const tab = searchParams.get('tab') || 'all';
 
   const [shops, setShops] = useState(initialShopsData);
+  const [editingShop, setEditingShop] = useState<Shop | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleDelete = (shopId: string) => {
     setShops(shops.filter(shop => shop.id !== shopId));
@@ -37,13 +51,35 @@ function ShopsPageContent() {
     ));
   };
 
+  const handleRestrict = (shopId: string) => {
+    setShops(shops.map(shop =>
+      shop.id === shopId ? { ...shop, status: 'restricted' } : shop
+    ));
+  };
+
+  const handleEditOpen = (shop: Shop) => {
+    setEditingShop(shop);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleEditSave = () => {
+    if (editingShop) {
+      setShops(shops.map(shop => (shop.id === editingShop.id ? editingShop : shop)));
+    }
+    setIsEditDialogOpen(false);
+    setEditingShop(null);
+  };
+
   const filteredShops = (status: string) => {
     if (status === 'all') return shops.filter(s => s.status !== 'blocked');
+    if (status === 'verified') return shops.filter(s => s.status === 'verified');
+    if (status === 'pending') return shops.filter(s => s.status === 'pending');
     if (status === 'blocked') return shops.filter(s => s.status === 'blocked');
-    return shops.filter(shop => shop.status === status);
+    if (status === 'restricted') return shops.filter(s => s.status === 'restricted');
+    return shops;
   }
 
-  const ShopsTable = ({ shops, tab }: { shops: typeof initialShopsData, tab: string }) => (
+  const ShopsTable = ({ shops, tab }: { shops: Shop[], tab: string }) => (
     <Table>
       <TableHeader>
         <TableRow>
@@ -51,6 +87,7 @@ function ShopsPageContent() {
           <TableHead>City</TableHead>
           <TableHead>Owner</TableHead>
           <TableHead>Verified</TableHead>
+          <TableHead>Status</TableHead>
           <TableHead><span className="sr-only">Actions</span></TableHead>
         </TableRow>
       </TableHeader>
@@ -63,6 +100,7 @@ function ShopsPageContent() {
             <TableCell>
               <Checkbox checked={shop.verified} aria-label="Verified" disabled />
             </TableCell>
+            <TableCell className="capitalize">{shop.status}</TableCell>
             <TableCell>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -73,8 +111,25 @@ function ShopsPageContent() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem>Restrict</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restrict</DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to restrict this shop?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action will limit the shop's visibility or functionality.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleRestrict(shop.id)}>Restrict</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -136,6 +191,7 @@ function ShopsPageContent() {
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
           <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="restricted">Restricted</TabsTrigger>
           <TabsTrigger value="blocked">Blocked</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
@@ -168,6 +224,20 @@ function ShopsPageContent() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="restricted">
+          <Card>
+            <CardHeader>
+              <CardTitle>Restricted Shops</CardTitle>
+            </CardHeader>
+            <CardContent>
+               {filteredShops('restricted').length > 0 ? (
+                <ShopsTable shops={shops} tab="restricted" />
+              ) : (
+                <p>No restricted shops.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="blocked">
           <Card>
             <CardHeader>
@@ -183,6 +253,57 @@ function ShopsPageContent() {
           </Card>
         </TabsContent>
       </Tabs>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Shop</DialogTitle>
+            <DialogDescription>
+              Make changes to the shop details here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          {editingShop && (
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={editingShop.name}
+                  onChange={(e) => setEditingShop({ ...editingShop, name: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="city" className="text-right">
+                  City
+                </Label>
+                <Input
+                  id="city"
+                  value={editingShop.city}
+                  onChange={(e) => setEditingShop({ ...editingShop, city: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="owner" className="text-right">
+                  Owner
+                </Label>
+                <Input
+                  id="owner"
+                  value={editingShop.owner}
+                  onChange={(e) => setEditingShop({ ...editingShop, owner: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" onClick={handleEditSave}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
