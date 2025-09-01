@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MoreHorizontal, PlusCircle, Search, CheckCircle, XCircle } from "lucide-react";
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -98,7 +98,9 @@ function ShopsPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
-  const searchTerm = searchParams.get('search') || "";
+  
+  // Local state for the search input
+  const [currentSearch, setCurrentSearch] = useState(searchParams.get('search') || "");
 
   const [shops, setShops] = useState(initialShopsData);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
@@ -129,13 +131,17 @@ function ShopsPageContent() {
     router.push(`${pathname}?${createQueryString('tab', value)}`);
   };
 
-  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      const value = event.currentTarget.value;
-      router.push(`${pathname}?${createQueryString('search', value)}`);
-    }
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value;
+    setCurrentSearch(value);
+    // Update URL query param in real-time or with debounce
+    router.push(`${pathname}?${createQueryString('search', value)}`, { scroll: false });
   };
-
+  
+  useEffect(() => {
+    // Ensure local state is in sync with URL on mount/navigation
+    setCurrentSearch(searchParams.get('search') || "");
+  }, [searchParams]);
 
   const handleDelete = (shopId: string, reason: string) => {
     setShops(shops.filter(shop => shop.id !== shopId));
@@ -244,19 +250,20 @@ function ShopsPageContent() {
 
   const filteredShops = useMemo(() => {
     let results = shops;
+    const searchTerm = searchParams.get('search') || "";
 
-    if (tab === 'all') {
-      results = shops.filter(s => s.status !== 'blocked');
-    } else if (tab) {
-      results = shops.filter(s => s.status === tab);
+    if (tab && tab !== 'all') {
+      results = results.filter(s => s.status === tab);
+    } else {
+       results = results.filter(s => s.status !== 'blocked');
     }
     
     if (searchTerm) {
-        return results.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        results = results.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
     
     return results;
-  }, [shops, tab, searchTerm]);
+  }, [shops, tab, searchParams]);
   
 
   const ShopsTable = ({ shopsToShow }: { shopsToShow: Shop[] }) => (
@@ -368,8 +375,8 @@ function ShopsPageContent() {
                     type="search"
                     placeholder="Search shops..."
                     className="pl-8"
-                    defaultValue={searchTerm}
-                    onKeyDown={handleSearch}
+                    value={currentSearch}
+                    onChange={handleSearchChange}
                 />
             </div>
             <DialogTrigger asChild>
