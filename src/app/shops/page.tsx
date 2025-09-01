@@ -35,6 +35,59 @@ const initialShopsData: Shop[] = [
   { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending' },
 ];
 
+function ActionDialog({
+  triggerText,
+  title,
+  description,
+  onAction,
+  destructive = false
+}: {
+  triggerText: string,
+  title: string,
+  description: string,
+  onAction: (reason: string) => void,
+  destructive?: boolean
+}) {
+  const [reason, setReason] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const handleAction = () => {
+    onAction(reason);
+    setOpen(false);
+    setReason("");
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <DropdownMenuItem 
+          className={destructive ? "text-destructive" : ""}
+          onSelect={(e) => e.preventDefault()}
+        >
+          {triggerText}
+        </DropdownMenuItem>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <Textarea placeholder="Reason for this action..." value={reason} onChange={(e) => setReason(e.target.value)} />
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleAction} 
+            className={destructive ? "bg-destructive hover:bg-destructive/90" : ""}
+          >
+            {triggerText}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+
 function ShopsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -47,13 +100,16 @@ function ShopsPageContent() {
   const [newShop, setNewShop] = useState({ name: '', city: '', owner: '' });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [reason, setReason] = useState("");
   const { toast } = useToast();
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
+      if (value) {
+        params.set(name, value)
+      } else {
+        params.delete(name)
+      }
       return params.toString()
     },
     [searchParams]
@@ -194,69 +250,34 @@ function ShopsPageContent() {
                   {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
                   
                   {shop.status !== 'blocked' && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restrict</DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure you want to restrict this shop?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action will limit the shop's visibility or functionality. Please provide a reason.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <Textarea placeholder="Reason for restriction..." value={reason} onChange={(e) => setReason(e.target.value)} />
-                        <AlertDialogFooter>
-                          <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => { handleRestrict(shop.id, reason); setReason(''); }}>Restrict</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                     <ActionDialog
+                        triggerText="Restrict"
+                        title="Are you sure you want to restrict this shop?"
+                        description="This action will limit the shop's visibility or functionality. Please provide a reason."
+                        onAction={(reason) => handleRestrict(shop.id, reason)}
+                      />
                   )}
                   
                   {shop.status !== 'blocked' ? (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Block</DropdownMenuItem>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure you want to block this shop?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action will prevent the shop from appearing in the app. Please provide a reason.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <Textarea placeholder="Reason for blocking..." value={reason} onChange={(e) => setReason(e.target.value)} />
-                        <AlertDialogFooter>
-                          <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => { handleBlock(shop.id, reason); setReason(''); }}>Block</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                     <ActionDialog
+                        triggerText="Block"
+                        title="Are you sure you want to block this shop?"
+                        description="This action will prevent the shop from appearing in the app. Please provide a reason."
+                        onAction={(reason) => handleBlock(shop.id, reason)}
+                      />
                   ) : (
                     <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
                   )}
                   
                   <DropdownMenuSeparator />
                   
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>Delete</DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the shop. Please provide a reason.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                       <Textarea placeholder="Reason for deletion..." value={reason} onChange={(e) => setReason(e.target.value)} />
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => {handleDelete(shop.id, reason); setReason('');}}>Delete</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <ActionDialog
+                    triggerText="Delete"
+                    title="Are you absolutely sure?"
+                    description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
+                    onAction={(reason) => handleDelete(shop.id, reason)}
+                    destructive={true}
+                  />
 
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -282,7 +303,7 @@ function ShopsPageContent() {
                 />
             </div>
             <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add Shop
                 </Button>
