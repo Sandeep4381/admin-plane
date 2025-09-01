@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "@/app/users/page";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, History, MessageSquare, Send, Mail, Smartphone } from "lucide-react";
+import { AlertCircle, History, MessageSquare, Send, Mail, Smartphone, Wallet, XCircle } from "lucide-react";
 
 type UserProfileDrawerProps = {
   user: User | null;
