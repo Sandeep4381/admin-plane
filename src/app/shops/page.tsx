@@ -243,18 +243,19 @@ function ShopsPageContent() {
   const pendingCount = useMemo(() => shops.filter(s => s.status === 'pending').length, [shops]);
 
   const filteredShops = useMemo(() => {
-    let shopsByStatus = shops;
-    if (tab === 'all') shopsByStatus = shops.filter(s => s.status !== 'blocked');
-    else if (tab === 'verified') shopsByStatus = shops.filter(s => s.status === 'verified');
-    else if (tab === 'pending') shopsByStatus = shops.filter(s => s.status === 'pending');
-    else if (tab === 'blocked') shopsByStatus = shops.filter(s => s.status === 'blocked');
-    else if (tab === 'restricted') shopsByStatus = shops.filter(s => s.status === 'restricted');
-    else if (tab === 'rejected') shopsByStatus = shops.filter(s => s.status === 'rejected');
+    let results = shops;
 
-    if (searchTerm) {
-        return shopsByStatus.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (tab === 'all') {
+      results = shops.filter(s => s.status !== 'blocked');
+    } else if (tab) {
+      results = shops.filter(s => s.status === tab);
     }
-    return shopsByStatus;
+    
+    if (searchTerm) {
+        return results.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    
+    return results;
   }, [shops, tab, searchTerm]);
   
 
@@ -341,6 +342,22 @@ function ShopsPageContent() {
     </Table>
   );
 
+  const ShopListContent = ({ title, description, shopsToShow }: { title: string, description: string, shopsToShow: Shop[] }) => (
+     <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+         {shopsToShow.length > 0 ? (
+          <ShopsTable shopsToShow={shopsToShow} />
+        ) : (
+          <p>No shops found matching the criteria.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <DashboardLayout>
        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -409,82 +426,46 @@ function ShopsPageContent() {
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Shops</CardTitle>
-              <CardDescription>A list of all non-blocked shops on the platform.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ShopsTable shopsToShow={filteredShops} />
-            </CardContent>
-          </Card>
+          <ShopListContent
+            title="All Shops"
+            description="A list of all non-blocked shops on the platform."
+            shopsToShow={filteredShops}
+          />
         </TabsContent>
          <TabsContent value="verified">
-          <Card>
-            <CardHeader>
-              <CardTitle>Verified Shops</CardTitle>
-              <CardDescription>Shops that have completed the verification process.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ShopsTable shopsToShow={filteredShops} />
-            </CardContent>
-          </Card>
+          <ShopListContent
+            title="Verified Shops"
+            description="Shops that have completed the verification process."
+            shopsToShow={filteredShops}
+          />
         </TabsContent>
          <TabsContent value="pending">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Verification</CardTitle>
-              <CardDescription>Shops awaiting verification from the admin team.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ShopsTable shopsToShow={filteredShops} />
-            </CardContent>
-          </Card>
+          <ShopListContent
+            title="Pending Verification"
+            description="Shops awaiting verification from the admin team."
+            shopsToShow={filteredShops}
+          />
         </TabsContent>
         <TabsContent value="restricted">
-          <Card>
-            <CardHeader>
-              <CardTitle>Restricted Shops</CardTitle>
-              <CardDescription>Shops with limited visibility or functionality.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               {filteredShops.length > 0 ? (
-                <ShopsTable shopsToShow={filteredShops} />
-              ) : (
-                <p>No restricted shops.</p>
-              )}
-            </CardContent>
-          </Card>
+          <ShopListContent
+            title="Restricted Shops"
+            description="Shops with limited visibility or functionality."
+            shopsToShow={filteredShops}
+          />
         </TabsContent>
         <TabsContent value="blocked">
-          <Card>
-            <CardHeader>
-              <CardTitle>Blocked Shops</CardTitle>
-              <CardDescription>Shops that have been blocked from the platform.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               {filteredShops.length > 0 ? (
-                <ShopsTable shopsToShow={filteredShops} />
-              ) : (
-                <p>No blocked shops.</p>
-              )}
-            </CardContent>
-          </Card>
+          <ShopListContent
+            title="Blocked Shops"
+            description="Shops that have been blocked from the platform."
+            shopsToShow={filteredShops}
+          />
         </TabsContent>
         <TabsContent value="rejected">
-          <Card>
-            <CardHeader>
-              <CardTitle>Rejected Shops</CardTitle>
-              <CardDescription>Shops that did not meet the verification criteria.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               {filteredShops.length > 0 ? (
-                <ShopsTable shopsToShow={filteredShops} />
-              ) : (
-                <p>No rejected shops.</p>
-              )}
-            </CardContent>
-          </Card>
+          <ShopListContent
+            title="Rejected Shops"
+            description="Shops that did not meet the verification criteria."
+            shopsToShow={filteredShops}
+          />
         </TabsContent>
       </Tabs>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
