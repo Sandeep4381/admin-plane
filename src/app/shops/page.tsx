@@ -15,6 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 type Shop = {
   id: string;
@@ -43,27 +45,45 @@ function ShopsPageContent() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [reason, setReason] = useState("");
+  const { toast } = useToast();
 
-  const handleDelete = (shopId: string) => {
+  const handleDelete = (shopId: string, reason: string) => {
     setShops(shops.filter(shop => shop.id !== shopId));
+    toast({
+      title: "Shop Deleted",
+      description: `Notification sent to shop owner with reason: ${reason}`,
+    })
   };
 
-  const handleBlock = (shopId: string) => {
+  const handleBlock = (shopId: string, reason: string) => {
     setShops(shops.map(shop => 
       shop.id === shopId ? { ...shop, status: 'blocked' } : shop
     ));
+    toast({
+      title: "Shop Blocked",
+      description: `Notification sent to shop owner with reason: ${reason}`,
+    })
   };
   
   const handleUnblock = (shopId: string) => {
     setShops(shops.map(shop =>
       shop.id === shopId ? { ...shop, status: 'pending' } : shop
     ));
+    toast({
+      title: "Shop Unblocked",
+      description: `Shop has been unblocked and notified.`,
+    })
   };
 
-  const handleRestrict = (shopId: string) => {
+  const handleRestrict = (shopId: string, reason: string) => {
     setShops(shops.map(shop =>
       shop.id === shopId ? { ...shop, status: 'restricted' } : shop
     ));
+    toast({
+      title: "Shop Restricted",
+      description: `Notification sent to shop owner with reason: ${reason}`,
+    })
   };
 
   const handleEditOpen = (shop: Shop) => {
@@ -74,6 +94,10 @@ function ShopsPageContent() {
   const handleEditSave = () => {
     if (editingShop) {
       setShops(shops.map(shop => (shop.id === editingShop.id ? editingShop : shop)));
+      toast({
+        title: "Shop Updated",
+        description: `Shop details for ${editingShop.name} have been updated.`,
+      })
     }
     setIsEditDialogOpen(false);
     setEditingShop(null);
@@ -89,6 +113,10 @@ function ShopsPageContent() {
     setShops([...shops, newShopData]);
     setIsAddDialogOpen(false);
     setNewShop({ name: '', city: '', owner: '' });
+    toast({
+      title: "Shop Added",
+      description: `${newShop.name} has been added and is pending verification.`,
+    })
   };
 
   const filteredShops = (status: string) => {
@@ -148,12 +176,13 @@ function ShopsPageContent() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure you want to restrict this shop?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action will limit the shop's visibility or functionality.
+                            This action will limit the shop's visibility or functionality. Please provide a reason.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
+                        <Textarea placeholder="Reason for restriction..." value={reason} onChange={(e) => setReason(e.target.value)} />
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleRestrict(shop.id)}>Restrict</AlertDialogAction>
+                          <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => { handleRestrict(shop.id, reason); setReason(''); }}>Restrict</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -168,12 +197,13 @@ function ShopsPageContent() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure you want to block this shop?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This action will prevent the shop from appearing in the app.
+                            This action will prevent the shop from appearing in the app. Please provide a reason.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
+                        <Textarea placeholder="Reason for blocking..." value={reason} onChange={(e) => setReason(e.target.value)} />
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleBlock(shop.id)}>Block</AlertDialogAction>
+                          <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => { handleBlock(shop.id, reason); setReason(''); }}>Block</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -191,12 +221,13 @@ function ShopsPageContent() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the shop.
+                          This action cannot be undone. This will permanently delete the shop. Please provide a reason.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
+                       <Textarea placeholder="Reason for deletion..." value={reason} onChange={(e) => setReason(e.target.value)} />
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDelete(shop.id)}>Delete</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => {handleDelete(shop.id, reason); setReason('');}}>Delete</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -392,3 +423,5 @@ export default function ShopsPage() {
     </React.Suspense>
   );
 }
+
+    
