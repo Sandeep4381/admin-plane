@@ -105,7 +105,7 @@ function ShopsPageContent() {
 
   const handleAddShop = () => {
     const newShopData: Shop = {
-      id: `S${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
+      id: `S${Date.now().toString(36)}${Math.random().toString(36).substring(2, 5)}`.toUpperCase(),
       ...newShop,
       verified: false,
       status: 'pending'
@@ -137,6 +137,7 @@ function ShopsPageContent() {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>Shop ID</TableHead>
           <TableHead>Shop Name</TableHead>
           <TableHead>City</TableHead>
           <TableHead>Owner</TableHead>
@@ -148,6 +149,7 @@ function ShopsPageContent() {
       <TableBody>
         {filteredShops(tab).map((shop) => (
           <TableRow key={shop.id}>
+            <TableCell className="font-medium">{shop.id}</TableCell>
             <TableCell className="font-medium">{shop.name}</TableCell>
             <TableCell>{shop.city}</TableCell>
             <TableCell>{shop.owner}</TableCell>
