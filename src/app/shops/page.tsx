@@ -4,12 +4,12 @@ import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
 import React, { useState } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -39,7 +39,10 @@ function ShopsPageContent() {
 
   const [shops, setShops] = useState(initialShopsData);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
+  const [newShop, setNewShop] = useState({ name: '', city: '', owner: '' });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleDelete = (shopId: string) => {
     setShops(shops.filter(shop => shop.id !== shopId));
@@ -48,6 +51,12 @@ function ShopsPageContent() {
   const handleBlock = (shopId: string) => {
     setShops(shops.map(shop => 
       shop.id === shopId ? { ...shop, status: 'blocked' } : shop
+    ));
+  };
+  
+  const handleUnblock = (shopId: string) => {
+    setShops(shops.map(shop =>
+      shop.id === shopId ? { ...shop, status: 'pending' } : shop
     ));
   };
 
@@ -70,13 +79,30 @@ function ShopsPageContent() {
     setEditingShop(null);
   };
 
+  const handleAddShop = () => {
+    const newShopData: Shop = {
+      id: `S${(Math.random() * 1000).toFixed(0).padStart(3, '0')}`,
+      ...newShop,
+      verified: false,
+      status: 'pending'
+    };
+    setShops([...shops, newShopData]);
+    setIsAddDialogOpen(false);
+    setNewShop({ name: '', city: '', owner: '' });
+  };
+
   const filteredShops = (status: string) => {
-    if (status === 'all') return shops.filter(s => s.status !== 'blocked');
-    if (status === 'verified') return shops.filter(s => s.status === 'verified');
-    if (status === 'pending') return shops.filter(s => s.status === 'pending');
-    if (status === 'blocked') return shops.filter(s => s.status === 'blocked');
-    if (status === 'restricted') return shops.filter(s => s.status === 'restricted');
-    return shops;
+    let shopsByStatus = shops;
+    if (status === 'all') shopsByStatus = shops.filter(s => s.status !== 'blocked');
+    else if (status === 'verified') shopsByStatus = shops.filter(s => s.status === 'verified');
+    else if (status === 'pending') shopsByStatus = shops.filter(s => s.status === 'pending');
+    else if (status === 'blocked') shopsByStatus = shops.filter(s => s.status === 'blocked');
+    else if (status === 'restricted') shopsByStatus = shops.filter(s => s.status === 'restricted');
+
+    if (searchTerm) {
+        return shopsByStatus.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    return shopsByStatus;
   }
 
   const ShopsTable = ({ shops, tab }: { shops: Shop[], tab: string }) => (
@@ -111,43 +137,49 @@ function ShopsPageContent() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restrict</DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to restrict this shop?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action will limit the shop's visibility or functionality.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleRestrict(shop.id)}>Restrict</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
                   
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Block</DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure you want to block this shop?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action will prevent the shop from appearing in the app.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleBlock(shop.id)}>Block</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  {shop.status !== 'blocked' && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Restrict</DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure you want to restrict this shop?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action will limit the shop's visibility or functionality.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleRestrict(shop.id)}>Restrict</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  
+                  {shop.status !== 'blocked' ? (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Block</DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure you want to block this shop?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action will prevent the shop from appearing in the app.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleBlock(shop.id)}>Block</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ) : (
+                    <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
+                  )}
                   
                   <DropdownMenuSeparator />
                   
@@ -180,12 +212,52 @@ function ShopsPageContent() {
 
   return (
     <DashboardLayout>
-      <PageHeader title="Shops" >
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Shop
-        </Button>
-      </PageHeader>
+       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <PageHeader title="Shops" >
+            <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search shops..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <DialogTrigger asChild>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Shop
+                </Button>
+            </DialogTrigger>
+        </PageHeader>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Shop</DialogTitle>
+            <DialogDescription>
+              Enter the details for the new shop. It will be added with a 'pending' status.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="add-name" className="text-right">Name</Label>
+              <Input id="add-name" value={newShop.name} onChange={(e) => setNewShop({ ...newShop, name: e.target.value })} className="col-span-3"/>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="add-city" className="text-right">City</Label>
+              <Input id="add-city" value={newShop.city} onChange={(e) => setNewShop({ ...newShop, city: e.target.value })} className="col-span-3"/>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="add-owner" className="text-right">Owner</Label>
+              <Input id="add-owner" value={newShop.owner} onChange={(e) => setNewShop({ ...newShop, owner: e.target.value })} className="col-span-3"/>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button type="submit" onClick={handleAddShop}>Add Shop</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Tabs defaultValue={tab}>
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
@@ -198,6 +270,7 @@ function ShopsPageContent() {
           <Card>
             <CardHeader>
               <CardTitle>All Shops</CardTitle>
+              <CardDescription>A list of all non-blocked shops on the platform.</CardDescription>
             </CardHeader>
             <CardContent>
               <ShopsTable shops={shops} tab="all" />
@@ -208,6 +281,7 @@ function ShopsPageContent() {
           <Card>
             <CardHeader>
               <CardTitle>Verified Shops</CardTitle>
+              <CardDescription>Shops that have completed the verification process.</CardDescription>
             </CardHeader>
             <CardContent>
               <ShopsTable shops={shops} tab="verified" />
@@ -218,6 +292,7 @@ function ShopsPageContent() {
           <Card>
             <CardHeader>
               <CardTitle>Pending Verification</CardTitle>
+              <CardDescription>Shops awaiting verification from the admin team.</CardDescription>
             </CardHeader>
             <CardContent>
               <ShopsTable shops={shops} tab="pending" />
@@ -228,6 +303,7 @@ function ShopsPageContent() {
           <Card>
             <CardHeader>
               <CardTitle>Restricted Shops</CardTitle>
+              <CardDescription>Shops with limited visibility or functionality.</CardDescription>
             </CardHeader>
             <CardContent>
                {filteredShops('restricted').length > 0 ? (
@@ -242,6 +318,7 @@ function ShopsPageContent() {
           <Card>
             <CardHeader>
               <CardTitle>Blocked Shops</CardTitle>
+              <CardDescription>Shops that have been blocked from the platform.</CardDescription>
             </CardHeader>
             <CardContent>
                {filteredShops('blocked').length > 0 ? (
