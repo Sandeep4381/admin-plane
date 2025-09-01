@@ -239,6 +239,8 @@ function ShopsPageContent() {
       description: `${newShop.name} has been added and is pending verification.`,
     })
   };
+  
+  const pendingCount = useMemo(() => shops.filter(s => s.status === 'pending').length, [shops]);
 
   const filteredShops = useMemo(() => {
     let shopsByStatus = shops;
@@ -391,7 +393,17 @@ function ShopsPageContent() {
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="pending">
+            <div className="relative">
+                Pending
+                {pendingCount > 0 && (
+                    <span className="absolute -right-2 -top-1 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                    </span>
+                )}
+            </div>
+          </TabsTrigger>
           <TabsTrigger value="restricted">Restricted</TabsTrigger>
           <TabsTrigger value="blocked">Blocked</TabsTrigger>
           <TabsTrigger value="rejected">Rejected</TabsTrigger>
