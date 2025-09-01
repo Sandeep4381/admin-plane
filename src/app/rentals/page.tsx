@@ -7,11 +7,10 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
-import { Search, Car, TrendingUp, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Search, TrendingUp, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { RentalsTable, initialRentalsData, Rental } from './rentals-table';
 import { RentalDetailsDrawer } from './rental-details-drawer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
