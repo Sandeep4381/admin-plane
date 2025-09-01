@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle, Search, CheckCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, CheckCircle, XCircle } from "lucide-react";
 import React, { useState, useMemo, useCallback } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 type Shop = {
   id: string;
@@ -24,15 +25,19 @@ type Shop = {
   city: string;
   owner: string;
   verified: boolean;
-  status: 'verified' | 'pending' | 'blocked' | 'restricted';
+  status: 'verified' | 'pending' | 'blocked' | 'restricted' | 'rejected';
+  documentUrl?: string;
+  shopImageUrl?: string;
 };
 
 const initialShopsData: Shop[] = [
-  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified' },
-  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified' },
-  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending' },
-  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified' },
-  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending' },
+  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S006', name: 'Blocked Wheels', city: 'Miami', owner: 'Frank White', verified: false, status: 'blocked', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S007', name: 'Rejected Rides', city: 'Seattle', owner: 'Grace Hall', verified: false, status: 'rejected', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
 ];
 
 function ActionDialog({
@@ -97,9 +102,14 @@ function ShopsPageContent() {
 
   const [shops, setShops] = useState(initialShopsData);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
+  const [verifyingShop, setVerifyingShop] = useState<Shop | null>(null);
   const [newShop, setNewShop] = useState({ name: '', city: '', owner: '' });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [isRejectionDialogOpen, setIsRejectionDialogOpen] = useState(false);
+  
   const { toast } = useToast();
 
   const createQueryString = useCallback(
@@ -147,11 +157,11 @@ function ShopsPageContent() {
   
   const handleUnblock = (shopId: string) => {
     setShops(shops.map(shop =>
-      shop.id === shopId ? { ...shop, status: 'pending' } : shop
+      shop.id === shopId ? { ...shop, status: 'verified', verified: true } : shop
     ));
     toast({
       title: "Shop Unblocked",
-      description: `Shop has been unblocked and notified.`,
+      description: `Shop has been unblocked and is now verified.`,
     })
   };
 
@@ -165,14 +175,36 @@ function ShopsPageContent() {
     })
   };
 
-  const handleVerify = (shopId: string) => {
+  const handleVerifyOpen = (shop: Shop) => {
+    setVerifyingShop(shop);
+    setIsVerificationDialogOpen(true);
+  };
+  
+  const handleApprove = (shopId: string) => {
     setShops(shops.map(shop => 
       shop.id === shopId ? { ...shop, status: 'verified', verified: true } : shop
     ));
+    setIsVerificationDialogOpen(false);
     toast({
-      title: "Shop Verified",
-      description: "The shop has been successfully verified and is now live.",
+      title: "Shop Approved",
+      description: "The shop has been successfully verified and a notification has been sent.",
     });
+  };
+  
+  const handleReject = () => {
+    if (verifyingShop) {
+      setShops(shops.map(shop => 
+        shop.id === verifyingShop.id ? { ...shop, status: 'rejected' } : shop
+      ));
+      setIsRejectionDialogOpen(false);
+      setIsVerificationDialogOpen(false);
+      toast({
+        title: "Shop Rejected",
+        description: `The shop has been rejected with reason: ${rejectionReason}`,
+        variant: "destructive"
+      });
+      setRejectionReason("");
+    }
   };
 
   const handleEditOpen = (shop: Shop) => {
@@ -215,6 +247,7 @@ function ShopsPageContent() {
     else if (tab === 'pending') shopsByStatus = shops.filter(s => s.status === 'pending');
     else if (tab === 'blocked') shopsByStatus = shops.filter(s => s.status === 'blocked');
     else if (tab === 'restricted') shopsByStatus = shops.filter(s => s.status === 'restricted');
+    else if (tab === 'rejected') shopsByStatus = shops.filter(s => s.status === 'rejected');
 
     if (searchTerm) {
         return shopsByStatus.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -249,7 +282,7 @@ function ShopsPageContent() {
             <TableCell className="capitalize">{shop.status}</TableCell>
             <TableCell>
               {shop.status === 'pending' ? (
-                <Button variant="outline" size="sm" onClick={() => handleVerify(shop.id)}>
+                <Button variant="outline" size="sm" onClick={() => handleVerifyOpen(shop)}>
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Verify
                 </Button>
@@ -265,7 +298,7 @@ function ShopsPageContent() {
                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
                     
-                    {shop.status !== 'blocked' && (
+                    {shop.status !== 'blocked' && shop.status !== 'restricted' && (
                        <ActionDialog
                           triggerText="Restrict"
                           title="Are you sure you want to restrict this shop?"
@@ -280,6 +313,7 @@ function ShopsPageContent() {
                           title="Are you sure you want to block this shop?"
                           description="This action will prevent the shop from appearing in the app. Please provide a reason."
                           onAction={(reason) => handleBlock(shop.id, reason)}
+                          destructive
                         />
                     ) : (
                       <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
@@ -360,6 +394,7 @@ function ShopsPageContent() {
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="restricted">Restricted</TabsTrigger>
           <TabsTrigger value="blocked">Blocked</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected</TabsTrigger>
         </TabsList>
         <TabsContent value="all">
           <Card>
@@ -424,6 +459,21 @@ function ShopsPageContent() {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="rejected">
+          <Card>
+            <CardHeader>
+              <CardTitle>Rejected Shops</CardTitle>
+              <CardDescription>Shops that did not meet the verification criteria.</CardDescription>
+            </CardHeader>
+            <CardContent>
+               {filteredShops.length > 0 ? (
+                <ShopsTable shopsToShow={filteredShops} />
+              ) : (
+                <p>No rejected shops.</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -476,6 +526,60 @@ function ShopsPageContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Dialog open={isVerificationDialogOpen} onOpenChange={setIsVerificationDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Shop Verification</DialogTitle>
+                <DialogDescription>Review the shop details and documents before making a decision.</DialogDescription>
+            </DialogHeader>
+            {verifyingShop && (
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <h4 className="font-semibold">{verifyingShop.name}</h4>
+                        <p className="text-sm text-muted-foreground">Owner: {verifyingShop.owner}</p>
+                        <p className="text-sm text-muted-foreground">City: {verifyingShop.city}</p>
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Submitted Documents</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="relative aspect-video rounded-md border" data-ai-hint="document image">
+                               <Image src={verifyingShop.documentUrl || "https://picsum.photos/400/300"} alt="Document" fill className="object-cover rounded-md" />
+                            </div>
+                             <div className="relative aspect-video rounded-md border" data-ai-hint="shop image">
+                                <Image src={verifyingShop.shopImageUrl || "https://picsum.photos/400/300"} alt="Shop" fill className="object-cover rounded-md" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <DialogFooter className="grid grid-cols-2 gap-2">
+                <Button variant="destructive" onClick={() => setIsRejectionDialogOpen(true)}>
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Reject
+                </Button>
+                <Button onClick={() => verifyingShop && handleApprove(verifyingShop.id)}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Approve
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={isRejectionDialogOpen} onOpenChange={setIsRejectionDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure you want to reject this shop?</AlertDialogTitle>
+                <AlertDialogDescription>Please provide a reason for rejection. This will be sent to the shop owner.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <Textarea placeholder="Reason for rejection..." value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} />
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setRejectionReason("")}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleReject} className="bg-destructive hover:bg-destructive/90">Reject Shop</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </DashboardLayout>
   );
 }
