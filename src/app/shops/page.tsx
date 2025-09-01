@@ -10,67 +10,118 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
-import React from 'react';
+import React, { useState } from 'react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-const shopsData = [
-  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true },
-  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true },
-  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false },
-  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true },
-  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false },
+const initialShopsData = [
+  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified' },
+  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified' },
+  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending' },
+  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified' },
+  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending' },
 ];
-
-const ShopsTable = ({ shops }: { shops: typeof shopsData }) => (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead>Shop Name</TableHead>
-        <TableHead>City</TableHead>
-        <TableHead>Owner</TableHead>
-        <TableHead>Verified</TableHead>
-        <TableHead><span className="sr-only">Actions</span></TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {shops.map((shop) => (
-        <TableRow key={shop.id}>
-          <TableCell className="font-medium">{shop.name}</TableCell>
-          <TableCell>{shop.city}</TableCell>
-          <TableCell>{shop.owner}</TableCell>
-          <TableCell>
-            <Checkbox checked={shop.verified} aria-label="Verified" />
-          </TableCell>
-          <TableCell>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button aria-haspopup="true" size="icon" variant="ghost">
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem>Edit</DropdownMenuItem>
-                <DropdownMenuItem>Restrict</DropdownMenuItem>
-                <DropdownMenuItem>Block</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-);
-
 
 function ShopsPageContent() {
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
 
-  const verifiedShops = shopsData.filter(shop => shop.verified);
-  const pendingShops = shopsData.filter(shop => !shop.verified);
+  const [shops, setShops] = useState(initialShopsData);
+
+  const handleDelete = (shopId: string) => {
+    setShops(shops.filter(shop => shop.id !== shopId));
+  };
+
+  const handleBlock = (shopId: string) => {
+    setShops(shops.map(shop => 
+      shop.id === shopId ? { ...shop, status: 'blocked' } : shop
+    ));
+  };
+
+  const filteredShops = (status: string) => {
+    if (status === 'all') return shops.filter(s => s.status !== 'blocked');
+    if (status === 'blocked') return shops.filter(s => s.status === 'blocked');
+    return shops.filter(shop => shop.status === status);
+  }
+
+  const ShopsTable = ({ shops, tab }: { shops: typeof initialShopsData, tab: string }) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Shop Name</TableHead>
+          <TableHead>City</TableHead>
+          <TableHead>Owner</TableHead>
+          <TableHead>Verified</TableHead>
+          <TableHead><span className="sr-only">Actions</span></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {filteredShops(tab).map((shop) => (
+          <TableRow key={shop.id}>
+            <TableCell className="font-medium">{shop.name}</TableCell>
+            <TableCell>{shop.city}</TableCell>
+            <TableCell>{shop.owner}</TableCell>
+            <TableCell>
+              <Checkbox checked={shop.verified} aria-label="Verified" disabled />
+            </TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-haspopup="true" size="icon" variant="ghost">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                  <DropdownMenuItem>Restrict</DropdownMenuItem>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Block</DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to block this shop?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action will prevent the shop from appearing in the app.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleBlock(shop.id)}>Block</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <DropdownMenuItem className="text-destructive" onSelect={(e) => e.preventDefault()}>Delete</DropdownMenuItem>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the shop.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDelete(shop.id)}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
 
   return (
     <DashboardLayout>
@@ -93,7 +144,7 @@ function ShopsPageContent() {
               <CardTitle>All Shops</CardTitle>
             </CardHeader>
             <CardContent>
-              <ShopsTable shops={shopsData} />
+              <ShopsTable shops={shops} tab="all" />
             </CardContent>
           </Card>
         </TabsContent>
@@ -103,7 +154,7 @@ function ShopsPageContent() {
               <CardTitle>Verified Shops</CardTitle>
             </CardHeader>
             <CardContent>
-              <ShopsTable shops={verifiedShops} />
+              <ShopsTable shops={shops} tab="verified" />
             </CardContent>
           </Card>
         </TabsContent>
@@ -113,7 +164,7 @@ function ShopsPageContent() {
               <CardTitle>Pending Verification</CardTitle>
             </CardHeader>
             <CardContent>
-              <ShopsTable shops={pendingShops} />
+              <ShopsTable shops={shops} tab="pending" />
             </CardContent>
           </Card>
         </TabsContent>
@@ -123,7 +174,11 @@ function ShopsPageContent() {
               <CardTitle>Blocked Shops</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>No blocked shops.</p>
+               {filteredShops('blocked').length > 0 ? (
+                <ShopsTable shops={shops} tab="blocked" />
+              ) : (
+                <p>No blocked shops.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
