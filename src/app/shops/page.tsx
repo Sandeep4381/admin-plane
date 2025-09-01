@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -36,17 +36,40 @@ const initialShopsData: Shop[] = [
 ];
 
 function ShopsPageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
+  const searchTerm = searchParams.get('search') || "";
 
   const [shops, setShops] = useState(initialShopsData);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
   const [newShop, setNewShop] = useState({ name: '', city: '', owner: '' });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [reason, setReason] = useState("");
   const { toast } = useToast();
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set(name, value)
+      return params.toString()
+    },
+    [searchParams]
+  );
+  
+  const handleTabChange = (value: string) => {
+    router.push(`${pathname}?${createQueryString('tab', value)}`);
+  };
+
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      const value = event.currentTarget.value;
+      router.push(`${pathname}?${createQueryString('search', value)}`);
+    }
+  };
+
 
   const handleDelete = (shopId: string, reason: string) => {
     setShops(shops.filter(shop => shop.id !== shopId));
@@ -254,14 +277,8 @@ function ShopsPageContent() {
                     type="search"
                     placeholder="Search shops..."
                     className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        // The filtering is already happening onChange, but if you wanted an explicit search on enter you could manage another state.
-                        // For this implementation, onChange is sufficient.
-                      }
-                    }}
+                    defaultValue={searchTerm}
+                    onKeyDown={handleSearch}
                 />
             </div>
             <DialogTrigger asChild>
@@ -298,7 +315,7 @@ function ShopsPageContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Tabs defaultValue={tab} className="w-full">
+      <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
