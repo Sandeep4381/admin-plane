@@ -156,7 +156,7 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
                                                 onAction={(reason) => onCancel(rental.id, reason)}
                                                 destructive
                                                 trigger={
-                                                    <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive w-full">
+                                                    <div className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive w-full">
                                                         <X className="mr-2 h-4 w-4" />
                                                         Cancel
                                                     </div>
@@ -167,7 +167,7 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
                                                 description="Please confirm you want to refund this payment. Specify a reason for the log."
                                                 onAction={(reason) => onRefund(rental.id, reason)}
                                                 trigger={
-                                                     <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full">
+                                                     <div className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full">
                                                         <Undo className="mr-2 h-4 w-4" />
                                                         Refund
                                                     </div>
@@ -178,7 +178,7 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
                                                 description="Are you sure you want to reassign the vehicle for this rental? Provide a reason for this change."
                                                 onAction={(reason) => onReassign(rental.id, reason)}
                                                 trigger={
-                                                     <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full">
+                                                     <div className="relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full">
                                                         <Car className="mr-2 h-4 w-4" />
                                                         Reassign
                                                     </div>
