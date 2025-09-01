@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -119,21 +119,22 @@ function ShopsPageContent() {
     })
   };
 
-  const filteredShops = (status: string) => {
+  const filteredShops = useMemo(() => {
     let shopsByStatus = shops;
-    if (status === 'all') shopsByStatus = shops.filter(s => s.status !== 'blocked');
-    else if (status === 'verified') shopsByStatus = shops.filter(s => s.status === 'verified');
-    else if (status === 'pending') shopsByStatus = shops.filter(s => s.status === 'pending');
-    else if (status === 'blocked') shopsByStatus = shops.filter(s => s.status === 'blocked');
-    else if (status === 'restricted') shopsByStatus = shops.filter(s => s.status === 'restricted');
+    if (tab === 'all') shopsByStatus = shops.filter(s => s.status !== 'blocked');
+    else if (tab === 'verified') shopsByStatus = shops.filter(s => s.status === 'verified');
+    else if (tab === 'pending') shopsByStatus = shops.filter(s => s.status === 'pending');
+    else if (tab === 'blocked') shopsByStatus = shops.filter(s => s.status === 'blocked');
+    else if (tab === 'restricted') shopsByStatus = shops.filter(s => s.status === 'restricted');
 
     if (searchTerm) {
         return shopsByStatus.filter(shop => shop.name.toLowerCase().includes(searchTerm.toLowerCase()));
     }
     return shopsByStatus;
-  }
+  }, [shops, tab, searchTerm]);
+  
 
-  const ShopsTable = ({ shops, tab }: { shops: Shop[], tab: string }) => (
+  const ShopsTable = ({ shopsToShow }: { shopsToShow: Shop[] }) => (
     <Table>
       <TableHeader>
         <TableRow>
@@ -147,7 +148,7 @@ function ShopsPageContent() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {filteredShops(tab).map((shop) => (
+        {shopsToShow.map((shop) => (
           <TableRow key={shop.id}>
             <TableCell className="font-medium">{shop.id}</TableCell>
             <TableCell className="font-medium">{shop.name}</TableCell>
@@ -255,6 +256,12 @@ function ShopsPageContent() {
                     className="pl-8"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        // The filtering is already happening onChange, but if you wanted an explicit search on enter you could manage another state.
+                        // For this implementation, onChange is sufficient.
+                      }
+                    }}
                 />
             </div>
             <DialogTrigger asChild>
@@ -291,7 +298,7 @@ function ShopsPageContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Tabs defaultValue={tab}>
+      <Tabs defaultValue={tab} className="w-full">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
@@ -306,7 +313,7 @@ function ShopsPageContent() {
               <CardDescription>A list of all non-blocked shops on the platform.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ShopsTable shops={shops} tab="all" />
+              <ShopsTable shopsToShow={filteredShops} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -317,7 +324,7 @@ function ShopsPageContent() {
               <CardDescription>Shops that have completed the verification process.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ShopsTable shops={shops} tab="verified" />
+              <ShopsTable shopsToShow={filteredShops} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -328,7 +335,7 @@ function ShopsPageContent() {
               <CardDescription>Shops awaiting verification from the admin team.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ShopsTable shops={shops} tab="pending" />
+              <ShopsTable shopsToShow={filteredShops} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -339,8 +346,8 @@ function ShopsPageContent() {
               <CardDescription>Shops with limited visibility or functionality.</CardDescription>
             </CardHeader>
             <CardContent>
-               {filteredShops('restricted').length > 0 ? (
-                <ShopsTable shops={shops} tab="restricted" />
+               {filteredShops.length > 0 ? (
+                <ShopsTable shopsToShow={filteredShops} />
               ) : (
                 <p>No restricted shops.</p>
               )}
@@ -354,8 +361,8 @@ function ShopsPageContent() {
               <CardDescription>Shops that have been blocked from the platform.</CardDescription>
             </CardHeader>
             <CardContent>
-               {filteredShops('blocked').length > 0 ? (
-                <ShopsTable shops={shops} tab="blocked" />
+               {filteredShops.length > 0 ? (
+                <ShopsTable shopsToShow={filteredShops} />
               ) : (
                 <p>No blocked shops.</p>
               )}
@@ -425,5 +432,3 @@ export default function ShopsPage() {
     </React.Suspense>
   );
 }
-
-    
