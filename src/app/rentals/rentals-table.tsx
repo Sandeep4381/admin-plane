@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, Eye, X, Undo, Car } from "lucide-react";
 import { cva } from 'class-variance-authority';
+import { ActionDialog } from './page';
 
 export type RentalStatus = 'upcoming' | 'active' | 'completed' | 'cancelled' | 'disputed';
 export type PaymentStatus = 'paid' | 'pending' | 'refunded';
@@ -83,11 +84,21 @@ const paymentStatusVariants = cva(
     }
 )
 
+type RentalsTableProps = {
+    rentals: Rental[],
+    onViewDetails: (rental: Rental) => void,
+    onCancel: (rentalId: string, reason: string) => void,
+    onRefund: (rentalId: string, reason: string) => void,
+    onReassign: (rentalId: string, reason: string) => void,
+}
 
-export function RentalsTable({ rentals, onViewDetails }: { rentals: Rental[], onViewDetails: (rental: Rental) => void }) {
+export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onReassign }: RentalsTableProps) {
     if (rentals.length === 0) {
         return <div className="p-6 text-center text-muted-foreground">No rentals found.</div>
     }
+
+    const isActionable = (rental: Rental) => !['completed', 'cancelled'].includes(rental.status);
+
 
     return (
         <Table>
@@ -137,18 +148,44 @@ export function RentalsTable({ rentals, onViewDetails }: { rentals: Rental[], on
                                         <Eye className="mr-2 h-4 w-4" />
                                         View Details
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <X className="mr-2 h-4 w-4" />
-                                        Cancel
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Undo className="mr-2 h-4 w-4" />
-                                        Refund
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        <Car className="mr-2 h-4 w-4" />
-                                        Reassign
-                                    </DropdownMenuItem>
+                                    {isActionable(rental) && (
+                                        <>
+                                            <ActionDialog 
+                                                title="Cancel Rental"
+                                                description="Are you sure you want to cancel this rental? This action cannot be undone."
+                                                onAction={(reason) => onCancel(rental.id, reason)}
+                                                destructive
+                                                trigger={
+                                                    <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive w-full">
+                                                        <X className="mr-2 h-4 w-4" />
+                                                        Cancel
+                                                    </div>
+                                                }
+                                            />
+                                            <ActionDialog 
+                                                title="Process Refund"
+                                                description="Please confirm you want to refund this payment. Specify a reason for the log."
+                                                onAction={(reason) => onRefund(rental.id, reason)}
+                                                trigger={
+                                                     <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full">
+                                                        <Undo className="mr-2 h-4 w-4" />
+                                                        Refund
+                                                    </div>
+                                                }
+                                            />
+                                            <ActionDialog 
+                                                title="Reassign Vehicle"
+                                                description="Are you sure you want to reassign the vehicle for this rental? Provide a reason for this change."
+                                                onAction={(reason) => onReassign(rental.id, reason)}
+                                                trigger={
+                                                     <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full">
+                                                        <Car className="mr-2 h-4 w-4" />
+                                                        Reassign
+                                                    </div>
+                                                }
+                                            />
+                                        </>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>

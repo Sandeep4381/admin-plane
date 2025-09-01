@@ -5,11 +5,16 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Search, Car, TrendingUp, XCircle, Clock } from 'lucide-react';
 import { RentalsTable, initialRentalsData, Rental } from './rentals-table';
 import { RentalDetailsDrawer } from './rental-details-drawer';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
   return (
@@ -25,6 +30,53 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string, 
   );
 }
 
+export function ActionDialog({
+  trigger,
+  title,
+  description,
+  onAction,
+  destructive = false
+}: {
+  trigger: React.ReactNode,
+  title: string,
+  description: string,
+  onAction: (reason: string) => void,
+  destructive?: boolean
+}) {
+  const [reason, setReason] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const handleAction = () => {
+    onAction(reason);
+    setOpen(false);
+    setReason("");
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        {trigger}
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <Textarea placeholder="Provide a reason for this action..." value={reason} onChange={(e) => setReason(e.target.value)} />
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setReason('')}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={handleAction} 
+            className={destructive ? "bg-destructive hover:bg-destructive/90" : ""}
+          >
+            Confirm
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 
 function RentalsPageContent() {
   const router = useRouter();
@@ -34,6 +86,8 @@ function RentalsPageContent() {
   const [currentSearch, setCurrentSearch] = useState(searchParams.get('search') || "");
   const [rentals, setRentals] = useState<Rental[]>(initialRentalsData);
   const [viewingRental, setViewingRental] = useState<Rental | null>(null);
+  const { toast } = useToast();
+
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -85,9 +139,49 @@ function RentalsPageContent() {
 
   const handleUpdateRental = (updatedRental: Rental) => {
     setRentals(currentRentals => currentRentals.map(r => r.id === updatedRental.id ? updatedRental : r));
-    setViewingRental(updatedRental); // Keep drawer open with updated data
+    setViewingRental(updatedRental);
   }
 
+  const handleCancelRental = (rentalId: string, reason: string) => {
+    setRentals(prevRentals => prevRentals.map(r => 
+      r.id === rentalId ? { 
+        ...r, 
+        status: 'cancelled',
+        paymentStatus: r.paymentStatus === 'paid' ? 'refunded' : r.paymentStatus, // Refund if already paid
+        cancellationLog: {
+          reason: reason || 'Cancelled by admin',
+          by: 'admin',
+          date: new Date().toISOString()
+        }
+      } : r
+    ));
+    toast({
+      title: "Rental Cancelled",
+      description: `Rental ${rentalId} has been cancelled. Reason: ${reason}`
+    })
+  }
+
+  const handleRefund = (rentalId: string, reason: string) => {
+     setRentals(prevRentals => prevRentals.map(r => 
+      r.id === rentalId ? { 
+        ...r, 
+        paymentStatus: 'refunded',
+      } : r
+    ));
+    toast({
+      title: "Payment Refunded",
+      description: `Refund processed for rental ${rentalId}. Reason: ${reason}`
+    })
+  }
+  
+  const handleReassign = (rentalId: string, reason: string) => {
+    toast({
+        title: "Vehicle Reassigned",
+        description: `A new vehicle has been assigned for rental ${rentalId}. Reason: ${reason}`
+    })
+    // In a real app, this would open a modal to select a new vehicle
+    // and update the rental with new vehicle details.
+  }
 
   return (
     <DashboardLayout>
@@ -124,7 +218,13 @@ function RentalsPageContent() {
           </div>
           <Card className="mt-4">
             <CardContent className="p-0">
-               <RentalsTable rentals={filteredRentals} onViewDetails={handleViewDetails} />
+               <RentalsTable 
+                rentals={filteredRentals} 
+                onViewDetails={handleViewDetails}
+                onCancel={handleCancelRental}
+                onRefund={handleRefund}
+                onReassign={handleReassign}
+               />
             </CardContent>
           </Card>
         </Tabs>
