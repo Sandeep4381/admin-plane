@@ -1,3 +1,7 @@
+
+"use client";
+
+import { useState } from 'react';
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { CancellationForm } from "./cancellation-form";
@@ -8,15 +12,27 @@ import { CancellationsByUserTypeChart } from "@/components/cancellations/cancell
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const highCancelShops = [
+
+const highCancelShopsData = [
     { name: "Deluxe Car Rentals", cancellations: 45, reason: "Vehicle Unavailable" },
     { name: "City Scooters", cancellations: 32, reason: "Customer No-Show" },
     { name: "Metro Auto", cancellations: 28, reason: "Changed Plans" },
     { name: "Speedy Bikes", cancellations: 15, reason: "Better Price" },
+    { name: "Downtown Cars", cancellations: 22, reason: "Vehicle Unavailable" },
+    { name: "Beach Bikes", cancellations: 18, reason: "Customer No-Show" },
 ]
 
 export default function CancellationsPage() {
+  const [reasonFilter, setReasonFilter] = useState("all");
+
+  const uniqueReasons = ["all", ...Array.from(new Set(highCancelShopsData.map(s => s.reason)))];
+  
+  const filteredShops = highCancelShopsData.filter(shop => 
+    reasonFilter === "all" || shop.reason === reasonFilter
+  );
+
   return (
     <DashboardLayout>
       <PageHeader title="Cancellations" />
@@ -55,12 +71,26 @@ export default function CancellationsPage() {
                     <CancellationsByUserTypeChart />
                 </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
+            <Card id="high-cancel-shops">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
                   <CardTitle>Shops with High Cancellations</CardTitle>
                   <CardDescription>
                       These shops have the highest cancellation rates.
                   </CardDescription>
+                </div>
+                <Select value={reasonFilter} onValueChange={setReasonFilter}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {uniqueReasons.map(reason => (
+                             <SelectItem key={reason} value={reason}>
+                                {reason === "all" ? "All Reasons" : reason}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -72,7 +102,7 @@ export default function CancellationsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {highCancelShops.map((shop) => (
+                        {filteredShops.map((shop) => (
                             <TableRow key={shop.name}>
                                 <TableCell className="font-medium">{shop.name}</TableCell>
                                 <TableCell>{shop.cancellations}</TableCell>

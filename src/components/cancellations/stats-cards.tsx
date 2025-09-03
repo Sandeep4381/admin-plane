@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileX, Percent, TrendingDown, TrendingUp } from "lucide-react"
@@ -6,7 +7,7 @@ const stats = [
     { title: "Total Cancellations", value: "890", icon: FileX, href: "/rentals?tab=cancelled" },
     { title: "Cancellation Rate", value: "5.8%", icon: Percent, href: "/cancellations" },
     { title: "Top Reason", value: "Vehicle Unavailable", icon: TrendingDown, href: "/cancellations" },
-    { title: "High-Cancel Shops", value: "Deluxe Car Rentals", icon: TrendingUp, href: "/shops" },
+    { title: "High-Cancel Shops", value: "Deluxe Car Rentals", icon: TrendingUp, href: "/cancellations#high-cancel-shops" },
 ]
 
 export function StatsCards() {
