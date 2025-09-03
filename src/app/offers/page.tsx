@@ -76,6 +76,13 @@ function OfferDialog({ trigger, offer, onSave }: { trigger: React.ReactNode, off
             });
             return;
         }
+        
+        const getStatus = (): OfferStatus => {
+            const now = new Date();
+            if (validity.from && now < validity.from) return 'scheduled';
+            if (validity.to && now > validity.to) return 'expired';
+            return 'active';
+        }
 
         const newOrUpdatedOffer: Offer = {
             id: offer?.id || `OFF${Date.now()}`,
@@ -86,7 +93,7 @@ function OfferDialog({ trigger, offer, onSave }: { trigger: React.ReactNode, off
             targetAudience,
             usageCount: offer?.usageCount || 0,
             budgetUsed: offer?.budgetUsed || 0,
-            status: offer?.status || 'scheduled',
+            status: offer?.status || getStatus(),
         };
         onSave(newOrUpdatedOffer);
         setOpen(false);
