@@ -5,11 +5,14 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon } from "lucide-react";
+import { Download, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon, AlertTriangle, FileText, CalendarClock } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RevenueByVehicleChart } from "@/components/earnings/revenue-by-vehicle-chart";
 import Image from "next/image";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 
 const revenueData = [
@@ -43,10 +46,19 @@ export default function EarningsPage() {
   return (
     <DashboardLayout>
       <PageHeader title="Earnings">
-        <Button variant="outline">
-          <Download className="mr-2 h-4 w-4" />
-          Export Report
-        </Button>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Report
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                <DropdownMenuItem>CSV</DropdownMenuItem>
+                <DropdownMenuItem>PDF</DropdownMenuItem>
+                <DropdownMenuItem>Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
       </PageHeader>
       
       <div className="space-y-6">
@@ -97,7 +109,7 @@ export default function EarningsPage() {
             <div className="lg:col-span-3 space-y-6">
                 <Card>
                     <CardHeader>
-                    <CardTitle>Revenue & Commission</CardTitle>
+                    <CardTitle>Revenue &amp; Commission</CardTitle>
                     <CardDescription>
                         Monthly breakdown of total revenue and platform commission.
                     </CardDescription>
@@ -192,10 +204,29 @@ export default function EarningsPage() {
                         </div>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Admin Controls &amp; Reporting</CardTitle>
+                        <CardDescription>Manage exports, reports, and alerts.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="scheduled-reports" className="flex items-center gap-2"><CalendarClock/>Scheduled Reports</Label>
+                            <Button variant="outline" size="sm">Schedule</Button>
+                        </div>
+                         <div className="flex items-center justify-between">
+                            <Label htmlFor="tax-breakdown" className="flex items-center gap-2"><FileText />Tax / GST Breakdown</Label>
+                            <Button variant="outline" size="sm">View</Button>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="payout-alerts" className="flex items-center gap-2"><AlertTriangle />Payout Alerts</Label>
+                            <Switch id="payout-alerts" />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
       </div>
     </DashboardLayout>
   );
 }
-
