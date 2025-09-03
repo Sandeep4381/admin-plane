@@ -7,9 +7,11 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCancellationAnalysis } from "./actions";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Lightbulb } from "lucide-react";
+import type { AnalyzeCancellationReasonsOutput } from "@/ai/flows/analyze-cancellation-reasons";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   reasons: z.string().min(10, "Please enter at least a few reasons for analysis."),
@@ -24,11 +26,15 @@ const sampleReasons = [
   "Change of plans.",
   "Vehicle was not the one shown in the picture.",
   "GPS location of the shop was incorrect.",
+  "The vehicle had mechanical issues.",
+  "Customer service was unresponsive.",
+  "Coupon code did not work.",
+  "Needed a different type of vehicle."
 ].join("\n");
 
 
 export function CancellationForm() {
-  const [analysis, setAnalysis] = useState("");
+  const [analysis, setAnalysis] = useState<AnalyzeCancellationReasonsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -40,10 +46,10 @@ export function CancellationForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    setAnalysis("");
+    setAnalysis(null);
     const reasonsArray = values.reasons.split('\n').filter(reason => reason.trim() !== '');
     const result = await getCancellationAnalysis(reasonsArray);
-    setAnalysis(result.summary);
+    setAnalysis(result);
     setIsLoading(false);
   }
 
@@ -95,9 +101,9 @@ export function CancellationForm() {
       </Form>
 
       {(isLoading || analysis) && (
-        <Card>
+        <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Analysis Summary</CardTitle>
+            <CardTitle>Analysis Results</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -105,8 +111,22 @@ export function CancellationForm() {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <p>AI is analyzing the data... this may take a moment.</p>
               </div>
-            ) : (
-              <p className="whitespace-pre-wrap">{analysis}</p>
+            ) : analysis && (
+              <div className="space-y-4">
+                <div>
+                    <h3 className="font-semibold flex items-center gap-2 mb-2"><Wand2 className="h-4 w-4" />Key Themes Summary</h3>
+                    <p className="whitespace-pre-wrap text-sm text-muted-foreground">{analysis.summary}</p>
+                </div>
+                {analysis.suggestions && (
+                    <>
+                    <Separator />
+                    <div>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><Lightbulb className="h-4 w-4 text-yellow-400" />Actionable Suggestions</h3>
+                        <p className="whitespace-pre-wrap text-sm text-muted-foreground">{analysis.suggestions}</p>
+                    </div>
+                    </>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

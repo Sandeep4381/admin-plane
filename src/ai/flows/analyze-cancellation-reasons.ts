@@ -1,8 +1,8 @@
 'use server';
 /**
- * @fileOverview Analyzes cancellation reasons using AI to identify key themes and patterns.
+ * @fileOverview Analyzes cancellation reasons using AI to identify key themes, patterns, and provide actionable suggestions.
  *
- * - analyzeCancellationReasons - A function that analyzes cancellation reasons and returns a summary of key themes.
+ * - analyzeCancellationReasons - A function that analyzes cancellation reasons and returns a summary of key themes and suggestions.
  * - AnalyzeCancellationReasonsInput - The input type for the analyzeCancellationReasons function.
  * - AnalyzeCancellationReasonsOutput - The return type for the analyzeCancellationReasons function.
  */
@@ -17,6 +17,7 @@ export type AnalyzeCancellationReasonsInput = z.infer<typeof AnalyzeCancellation
 
 const AnalyzeCancellationReasonsOutputSchema = z.object({
   summary: z.string().describe('A summary of the key themes and patterns in the cancellation reasons.'),
+  suggestions: z.string().describe('Actionable suggestions to help reduce cancellations based on the provided reasons.'),
 });
 export type AnalyzeCancellationReasonsOutput = z.infer<typeof AnalyzeCancellationReasonsOutputSchema>;
 
@@ -28,16 +29,17 @@ const prompt = ai.definePrompt({
   name: 'analyzeCancellationReasonsPrompt',
   input: {schema: AnalyzeCancellationReasonsInputSchema},
   output: {schema: AnalyzeCancellationReasonsOutputSchema},
-  prompt: `You are an expert in analyzing text data and identifying key themes and patterns.
+  prompt: `You are an expert in analyzing customer feedback for a vehicle rental platform and providing actionable business intelligence.
 
-You will be provided with a list of cancellation reasons. Your task is to analyze these reasons and provide a summary of the key themes and patterns.
+You will be provided with a list of cancellation reasons. Your task is to analyze these reasons and perform two tasks:
+1.  Provide a concise summary of the key themes and patterns.
+2.  Provide actionable suggestions for the business to reduce cancellations based on these themes.
 
 Cancellation Reasons:
 {{#each cancellationReasons}}
 - {{{this}}}
 {{/each}}
-
-Summary:`,
+`,
 });
 
 const analyzeCancellationReasonsFlow = ai.defineFlow(

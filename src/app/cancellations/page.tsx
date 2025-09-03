@@ -2,35 +2,46 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { CancellationForm } from "./cancellation-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CancellationRatioChart } from "@/components/dashboard/cancellation-ratio-chart";
 
 export default function CancellationsPage() {
   return (
     <DashboardLayout>
       <PageHeader title="Cancellations" />
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-2">
-          <Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
             <CardHeader>
                 <CardTitle>Analyze Cancellation Reasons</CardTitle>
                 <CardDescription>
-                    Use AI to identify key themes from cancellation reasons. Paste a list of reasons below, one per line.
+                    Use AI to identify key themes and get actionable suggestions from your cancellation data. Paste a list of reasons below, one per line.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <CancellationForm />
             </CardContent>
-          </Card>
-        </div>
-        <div className="lg:col-span-3">
+        </Card>
+        <div className="space-y-6">
           <Card>
             <CardHeader>
                 <CardTitle>Cancellation Statistics</CardTitle>
                 <CardDescription>
-                    Breakdown of cancellations by various factors.
+                    A visual breakdown of cancellation reasons.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <p>Charts and stats about cancellations by User, Shop, Area will be displayed here.</p>
+               <CancellationRatioChart />
+               <p className="text-center text-sm text-muted-foreground mt-2">Breakdown by reason</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+                <CardTitle>Shops with High Cancellations</CardTitle>
+                <CardDescription>
+                    These shops have the highest cancellation rates.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p>A table of shops ranked by cancellations will be displayed here.</p>
             </CardContent>
           </Card>
         </div>
