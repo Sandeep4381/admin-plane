@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Percent, Tag, Users, Calendar } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Percent, Tag, Users, Calendar, PlayCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
@@ -79,6 +79,7 @@ function OfferDialog({ trigger, offer, onSave }: { trigger: React.ReactNode, off
         
         const getStatus = (): OfferStatus => {
             const now = new Date();
+            now.setHours(0,0,0,0);
             if (validity.from && now < validity.from) return 'scheduled';
             if (validity.to && now > validity.to) return 'expired';
             return 'active';
@@ -93,7 +94,7 @@ function OfferDialog({ trigger, offer, onSave }: { trigger: React.ReactNode, off
             targetAudience,
             usageCount: offer?.usageCount || 0,
             budgetUsed: offer?.budgetUsed || 0,
-            status: offer?.status || getStatus(),
+            status: offer ? offer.status : getStatus(), // Keep existing status on edit, determine new on create
         };
         onSave(newOrUpdatedOffer);
         setOpen(false);
@@ -206,6 +207,20 @@ export default function OffersPage() {
         toast({ title: "Offer Deleted", description: "The offer has been permanently deleted.", variant: "destructive" });
     }
 
+    const handleActivateOffer = (offerId: string) => {
+        setOffers(offers.map(o => {
+            if (o.id === offerId) {
+                return {
+                    ...o,
+                    status: 'active',
+                    validity: { ...o.validity, from: new Date() }
+                };
+            }
+            return o;
+        }));
+        toast({ title: "Offer Activated", description: "The offer is now live." });
+    }
+
     const filteredOffers = useMemo(() => ({
         active: offers.filter(o => o.status === 'active'),
         scheduled: offers.filter(o => o.status === 'scheduled'),
@@ -241,7 +256,7 @@ export default function OffersPage() {
                         <CardDescription>Monitor and manage your currently active offers.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <OffersTable offers={filteredOffers.active} onSave={handleSaveOffer} onDelete={handleDeleteOffer} />
+                        <OffersTable offers={filteredOffers.active} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
                     </CardContent>
                 </Card>
             </div>
@@ -253,7 +268,7 @@ export default function OffersPage() {
                     <CardDescription>These offers are scheduled to go live in the future.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <OffersTable offers={filteredOffers.scheduled} onSave={handleSaveOffer} onDelete={handleDeleteOffer} />
+                    <OffersTable offers={filteredOffers.scheduled} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
                 </CardContent>
             </Card>
          </TabsContent>
@@ -264,7 +279,7 @@ export default function OffersPage() {
                     <CardDescription>These offers have already ended.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <OffersTable offers={filteredOffers.expired} onSave={handleSaveOffer} onDelete={handleDeleteOffer} />
+                    <OffersTable offers={filteredOffers.expired} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
                 </CardContent>
             </Card>
          </TabsContent>
@@ -274,7 +289,7 @@ export default function OffersPage() {
 }
 
 
-function OffersTable({ offers, onSave, onDelete }: { offers: Offer[], onSave: (offer: Offer) => void, onDelete: (id: string) => void }) {
+function OffersTable({ offers, onSave, onDelete, onActivate }: { offers: Offer[], onSave: (offer: Offer) => void, onDelete: (id: string) => void, onActivate: (id: string) => void }) {
     
     const formatDiscount = (type: OfferType, value: number) => {
         switch(type) {
@@ -316,11 +331,18 @@ function OffersTable({ offers, onSave, onDelete }: { offers: Offer[], onSave: (o
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    {offer.status !== 'expired' && (
                                     <OfferDialog
                                         trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
                                         offer={offer}
                                         onSave={onSave}
                                     />
+                                    )}
+                                    {offer.status === 'scheduled' && (
+                                        <DropdownMenuItem onClick={() => onActivate(offer.id)}>
+                                            <PlayCircle className="mr-2 h-4 w-4" /> Activate Now
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator />
                                     <DeleteDialog onConfirm={() => onDelete(offer.id)} />
                                 </DropdownMenuContent>
