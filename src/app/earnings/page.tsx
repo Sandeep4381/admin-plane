@@ -1,12 +1,15 @@
+
 "use client";
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Download, TrendingUp, TrendingDown, DollarSign, PieChart as PieChartIcon } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { RevenueByVehicleChart } from "@/components/earnings/revenue-by-vehicle-chart";
+import Image from "next/image";
 
 
 const revenueData = [
@@ -25,6 +28,14 @@ const transactionData = [
     { id: 'T003', date: '2024-07-19', shop: 'Metro Auto', amount: '$250.00', commission: '$25.00' },
     { id: 'T004', date: '2024-07-19', shop: 'Deluxe Car Rentals', amount: '$80.00', commission: '$8.00' },
     { id: 'T005', date: '2024-07-18', shop: 'City Scooters', amount: '$30.00', commission: '$3.00' },
+];
+
+const shopLeaderboardData = [
+    { rank: 1, name: "Deluxe Car Rentals", earnings: '$55,000' },
+    { rank: 2, name: "Metro Auto", earnings: '$48,000' },
+    { rank: 3, name: "Speedy Bikes", earnings: '$32,000' },
+    { rank: 4, name: "City Scooters", earnings: '$25,000' },
+    { rank: 5, name: "Downtown Cars", earnings: '$22,000' },
 ]
 
 
@@ -39,7 +50,7 @@ export default function EarningsPage() {
       </PageHeader>
       
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -60,6 +71,16 @@ export default function EarningsPage() {
                     <p className="text-xs text-muted-foreground">+18.3% from last month</p>
                 </CardContent>
             </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+                    <PieChartIcon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">$85,320</div>
+                    <p className="text-xs text-muted-foreground">+15.2% from last month</p>
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Shop Payouts</CardTitle>
@@ -71,61 +92,110 @@ export default function EarningsPage() {
                 </CardContent>
             </Card>
         </div>
-
-        <Card>
-            <CardHeader>
-            <CardTitle>Revenue & Commission</CardTitle>
-            <CardDescription>
-                Monthly breakdown of total revenue and platform commission.
-            </CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-                <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={revenueData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false}/>
-                        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
-                        <Tooltip />
-                        <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="commission" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
-
-         <Card>
-            <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>
-                A log of the latest transactions processed on the platform.
-            </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Transaction ID</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Shop</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Commission</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {transactionData.map((transaction) => (
-                            <TableRow key={transaction.id}>
-                                <TableCell className="font-medium">{transaction.id}</TableCell>
-                                <TableCell>{transaction.date}</TableCell>
-                                <TableCell>{transaction.shop}</TableCell>
-                                <TableCell>{transaction.amount}</TableCell>
-                                <TableCell className="text-primary">{transaction.commission}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3 space-y-6">
+                <Card>
+                    <CardHeader>
+                    <CardTitle>Revenue & Commission</CardTitle>
+                    <CardDescription>
+                        Monthly breakdown of total revenue and platform commission.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                        <ResponsiveContainer width="100%" height={350}>
+                            <BarChart data={revenueData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+                                <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                                <Tooltip />
+                                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="commission" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                    <CardTitle>Recent Transactions</CardTitle>
+                    <CardDescription>
+                        A log of the latest transactions processed on the platform.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Transaction ID</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Shop</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Commission</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {transactionData.map((transaction) => (
+                                    <TableRow key={transaction.id}>
+                                        <TableCell className="font-medium">{transaction.id}</TableCell>
+                                        <TableCell>{transaction.date}</TableCell>
+                                        <TableCell>{transaction.shop}</TableCell>
+                                        <TableCell>{transaction.amount}</TableCell>
+                                        <TableCell className="text-primary">{transaction.commission}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Revenue by Vehicle Type</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <RevenueByVehicleChart />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Shop Leaderboard</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Rank</TableHead>
+                                    <TableHead>Shop Name</TableHead>
+                                    <TableHead>Earnings</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {shopLeaderboardData.map((shop) => (
+                                    <TableRow key={shop.rank}>
+                                        <TableCell>{shop.rank}</TableCell>
+                                        <TableCell className="font-medium">{shop.name}</TableCell>
+                                        <TableCell>{shop.earnings}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Revenue by Area</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="relative aspect-video w-full">
+                           <Image src="https://picsum.photos/800/451" alt="Revenue Heatmap" fill className="object-cover rounded-md" data-ai-hint="map heatmap" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
       </div>
     </DashboardLayout>
   );
 }
+
