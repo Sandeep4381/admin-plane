@@ -5,6 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CancellationRatioChart } from "@/components/dashboard/cancellation-ratio-chart";
 import { StatsCards } from "@/components/cancellations/stats-cards";
 import { CancellationsByUserTypeChart } from "@/components/cancellations/cancellations-by-user-type-chart";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+
+const highCancelShops = [
+    { name: "Deluxe Car Rentals", cancellations: 45, reason: "Vehicle Unavailable" },
+    { name: "City Scooters", cancellations: 32, reason: "Customer No-Show" },
+    { name: "Metro Auto", cancellations: 28, reason: "Changed Plans" },
+    { name: "Speedy Bikes", cancellations: 15, reason: "Better Price" },
+]
 
 export default function CancellationsPage() {
   return (
@@ -53,7 +63,24 @@ export default function CancellationsPage() {
                   </CardDescription>
               </CardHeader>
               <CardContent>
-                  <p>A table of shops ranked by cancellations will be displayed here.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Shop Name</TableHead>
+                            <TableHead>Cancellations</TableHead>
+                            <TableHead>Top Reason</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {highCancelShops.map((shop) => (
+                            <TableRow key={shop.name}>
+                                <TableCell className="font-medium">{shop.name}</TableCell>
+                                <TableCell>{shop.cancellations}</TableCell>
+                                <TableCell><Badge variant="secondary">{shop.reason}</Badge></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
               </CardContent>
             </Card>
             <Card>
@@ -62,7 +89,9 @@ export default function CancellationsPage() {
                     <CardDescription>A heatmap showing cancellation hotspots.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p>A heatmap visualization will be displayed here.</p>
+                    <div className="relative aspect-video w-full">
+                        <Image src="https://picsum.photos/800/450" alt="Heatmap" fill className="object-cover rounded-md" data-ai-hint="map heatmap" />
+                    </div>
                 </CardContent>
             </Card>
           </div>
