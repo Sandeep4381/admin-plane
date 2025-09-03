@@ -3,47 +3,69 @@ import { PageHeader } from "@/components/page-header";
 import { CancellationForm } from "./cancellation-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CancellationRatioChart } from "@/components/dashboard/cancellation-ratio-chart";
+import { StatsCards } from "@/components/cancellations/stats-cards";
+import { CancellationsByUserTypeChart } from "@/components/cancellations/cancellations-by-user-type-chart";
 
 export default function CancellationsPage() {
   return (
     <DashboardLayout>
       <PageHeader title="Cancellations" />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-            <CardHeader>
-                <CardTitle>Analyze Cancellation Reasons</CardTitle>
-                <CardDescription>
-                    Use AI to identify key themes and get actionable suggestions from your cancellation data. Paste a list of reasons below, one per line.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <CancellationForm />
-            </CardContent>
-        </Card>
-        <div className="space-y-6">
+      <div className="space-y-6">
+        <StatsCards />
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card>
-            <CardHeader>
-                <CardTitle>Cancellation Statistics</CardTitle>
-                <CardDescription>
-                    A visual breakdown of cancellation reasons.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-               <CancellationRatioChart />
-               <p className="text-center text-sm text-muted-foreground mt-2">Breakdown by reason</p>
-            </CardContent>
+              <CardHeader>
+                  <CardTitle>Analyze Cancellation Reasons</CardTitle>
+                  <CardDescription>
+                      Use AI to identify key themes and get actionable suggestions from your cancellation data. Paste a list of reasons below, one per line.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <CancellationForm />
+              </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-                <CardTitle>Shops with High Cancellations</CardTitle>
-                <CardDescription>
-                    These shops have the highest cancellation rates.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p>A table of shops ranked by cancellations will be displayed here.</p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                  <CardTitle>Cancellation Breakdown by Reason</CardTitle>
+                  <CardDescription>
+                      A visual breakdown of cancellation reasons.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CancellationRatioChart />
+              </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Cancellations by User Type</CardTitle>
+                    <CardDescription>A breakdown of cancellations by user segment.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <CancellationsByUserTypeChart />
+                </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                  <CardTitle>Shops with High Cancellations</CardTitle>
+                  <CardDescription>
+                      These shops have the highest cancellation rates.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <p>A table of shops ranked by cancellations will be displayed here.</p>
+              </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Cancellations by Area (Heatmap)</CardTitle>
+                    <CardDescription>A heatmap showing cancellation hotspots.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p>A heatmap visualization will be displayed here.</p>
+                </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </DashboardLayout>
