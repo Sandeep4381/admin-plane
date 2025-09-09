@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 
 type Admin = {
@@ -164,8 +163,7 @@ function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin
     )
 }
 
-function RoleDialog({ onSave, trigger, roleToEdit }: { onSave: (role: any) => void; trigger: React.ReactNode; roleToEdit?: typeof initialRoles[number] }) {
-    const [open, setOpen] = useState(false);
+function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => void; onBack: () => void; roleToEdit?: typeof initialRoles[number] | null }) {
     const [roleName, setRoleName] = useState(roleToEdit?.name || '');
     const [roleDescription, setRoleDescription] = useState(roleToEdit?.description || '');
     const [permissions, setPermissions] = useState<RolePermissions>(roleToEdit ? permissionsConfig[roleToEdit.name] : {});
@@ -185,73 +183,81 @@ function RoleDialog({ onSave, trigger, roleToEdit }: { onSave: (role: any) => vo
     };
 
     const handleSave = () => {
-        // Validation logic
         if (!roleName) {
             toast({ title: "Validation Error", description: "Role name is required.", variant: "destructive" });
             return;
         }
         onSave({ name: roleName, description: roleDescription, permissions });
-        setOpen(false);
+        onBack();
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{trigger}</DialogTrigger>
-            <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                    <DialogTitle>{roleToEdit ? `Edit Role: ${roleToEdit.name}` : 'Create New Role'}</DialogTitle>
-                    <DialogDescription>Define the role name, description, and permissions.</DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-                     <div className="space-y-4">
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                     <Button variant="outline" size="icon" onClick={onBack}>
+                        <ArrowLeft />
+                    </Button>
+                    <div>
+                        <CardTitle>{roleToEdit ? `Edit Role: ${roleToEdit.name}` : 'Create New Role'}</CardTitle>
+                        <CardDescription>Define the role name, description, and permissions.</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-1 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="role-name">Role Name</Label>
                             <Input id="role-name" value={roleName} onChange={(e) => setRoleName(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="role-description">Description</Label>
-                            <Textarea id="role-description" value={roleDescription} onChange={(e) => setRoleDescription(e.target.value)} />
+                            <Textarea id="role-description" value={roleDescription} onChange={(e) => setRoleDescription(e.target.value)} rows={5} />
                         </div>
                     </div>
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Permissions Matrix</h3>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Module</TableHead>
-                                    {permissionTypes.map(p => <TableHead key={p} className="capitalize text-center">{p}</TableHead>)}
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {permissionModules.map(module => (
-                                    <TableRow key={module}>
-                                        <TableCell className="font-medium">{module}</TableCell>
-                                        {permissionTypes.map(type => (
-                                            <TableCell key={type} className="text-center">
-                                                <Checkbox
-                                                    checked={permissions[module]?.[type] || false}
-                                                    onCheckedChange={(checked) => handlePermissionChange(module, type, !!checked)}
-                                                />
-                                            </TableCell>
-                                        ))}
+                    <div className="md:col-span-2 space-y-4">
+                        <h3 className="font-semibold text-lg">Permissions Matrix</h3>
+                        <div className="border rounded-lg overflow-x-auto">
+                           <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Module</TableHead>
+                                        {permissionTypes.map(p => <TableHead key={p} className="capitalize text-center">{p}</TableHead>)}
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {permissionModules.map(module => (
+                                        <TableRow key={module}>
+                                            <TableCell className="font-medium">{module}</TableCell>
+                                            {permissionTypes.map(type => (
+                                                <TableCell key={type} className="text-center">
+                                                    <Checkbox
+                                                        checked={permissions[module]?.[type] || false}
+                                                        onCheckedChange={(checked) => handlePermissionChange(module, type, !!checked)}
+                                                    />
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                 <div className="flex justify-end">
                     <Button onClick={handleSave}>Save Role</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    )
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function AdminControlsPage() {
     const [admins, setAdmins] = useState(initialAdmins);
     const [roles, setRoles] = useState(initialRoles);
+    const [editingRole, setEditingRole] = useState<typeof initialRoles[number] | null>(null);
+    const [isEditingOrCreatingRole, setIsEditingOrCreatingRole] = useState(false);
     const { toast } = useToast();
 
     const handleSaveAdmin = (newAdminData: Omit<Admin, 'id' | 'lastLogin'>) => {
@@ -276,9 +282,24 @@ export default function AdminControlsPage() {
     }
 
     const handleSaveRole = (role: any) => {
-        // This is a mock save. In a real app, you'd update state or call an API.
         toast({ title: "Role Saved", description: `Permissions for ${role.name} have been updated.` });
+        // In a real app, you would also update the roles and permissionsConfig state
     };
+    
+    const handleEditRole = (role: typeof initialRoles[number]) => {
+        setEditingRole(role);
+        setIsEditingOrCreatingRole(true);
+    }
+    
+    const handleCreateRole = () => {
+        setEditingRole(null);
+        setIsEditingOrCreatingRole(true);
+    }
+
+    const handleBackToList = () => {
+        setIsEditingOrCreatingRole(false);
+        setEditingRole(null);
+    }
 
 
   return (
@@ -347,36 +368,33 @@ export default function AdminControlsPage() {
                 </Card>
             </TabsContent>
             <TabsContent value="roles">
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Roles &amp; Permissions</CardTitle>
-                            <CardDescription>Define roles and manage fine-grained permissions for each section of the dashboard.</CardDescription>
-                        </div>
-                        <RoleDialog
-                            trigger={<Button><PlusCircle className="mr-2 h-4 w-4" /> Create Role</Button>}
-                            onSave={handleSaveRole}
-                        />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {roles.map(role => (
-                            <Card key={role.name} className="flex items-center justify-between p-4">
-                                <div>
-                                    <h4 className="font-semibold flex items-center gap-2"><ShieldCheck className="text-primary h-5 w-5" />{role.name}</h4>
-                                    <p className="text-sm text-muted-foreground ml-7">{role.description}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                     <RoleDialog
-                                        trigger={<Button variant="outline" size="sm"><Edit className="mr-2 h-4 w-4" /> Edit</Button>}
-                                        roleToEdit={role}
-                                        onSave={handleSaveRole}
-                                    />
-                                    <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
-                                </div>
-                            </Card>
-                        ))}
-                    </CardContent>
-                </Card>
+                 {isEditingOrCreatingRole ? (
+                     <RoleEditor onSave={handleSaveRole} onBack={handleBackToList} roleToEdit={editingRole} />
+                 ) : (
+                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Roles &amp; Permissions</CardTitle>
+                                <CardDescription>Define roles and manage fine-grained permissions for each section of the dashboard.</CardDescription>
+                            </div>
+                            <Button onClick={handleCreateRole}><PlusCircle className="mr-2 h-4 w-4" /> Create Role</Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {roles.map(role => (
+                                <Card key={role.name} className="flex items-center justify-between p-4">
+                                    <div>
+                                        <h4 className="font-semibold flex items-center gap-2"><ShieldCheck className="text-primary h-5 w-5" />{role.name}</h4>
+                                        <p className="text-sm text-muted-foreground ml-7">{role.description}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                         <Button variant="outline" size="sm" onClick={() => handleEditRole(role)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                        <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                                    </div>
+                                </Card>
+                            ))}
+                        </CardContent>
+                    </Card>
+                 )}
             </TabsContent>
              <TabsContent value="logs">
                  <Card>
@@ -425,5 +443,3 @@ export default function AdminControlsPage() {
     </>
   );
 }
-
-    
