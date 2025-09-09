@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft, Eye } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,12 +18,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+
 
 type Admin = {
   id: string;
   name: string;
   email: string;
-  role: 'Super Admin' | 'Support Manager' | 'Finance Head' | 'Operations Lead';
+  role: 'Super Admin' | 'Support Manager' | 'Finance Head' | 'Operations Lead' | 'Analyzer' | 'Project Management' | 'Research Assistant';
   lastLogin: string;
   status: 'active' | 'suspended';
 };
@@ -36,11 +39,16 @@ const initialAdmins: Admin[] = [
 ];
 
 const initialRoles = [
-  { name: 'Super Admin', description: 'Full access to all dashboard features.' },
-  { name: 'Support Manager', description: 'Manages users, rentals, and notifications.' },
-  { name: 'Finance Head', description: 'Access to earnings, payouts, and financial reports.' },
-  { name: 'Operations Lead', description: 'Manages shops, cancellations, and banners.' },
+  { id: 20, name: 'Super Admin', description: 'Full access to all dashboard features.', status: 'active', fullAccess: true },
+  { id: 76, name: 'Research Assistant', description: 'Manages users, rentals, and notifications.', status: 'active', fullAccess: false },
+  { id: 77, name: 'Project Management', description: 'Access to earnings, payouts, and financial reports.', status: 'active', fullAccess: false },
+  { id: 78, name: 'Analyzer', description: 'Manages shops, cancellations, and banners.', status: 'active', fullAccess: false },
+  { name: 'Support Manager', id: 79, description: 'Manages users, rentals, and notifications.', status: 'active', fullAccess: false },
+  { name: 'Finance Head', id: 80, description: 'Access to earnings, payouts, and financial reports.', status: 'active', fullAccess: false },
+  { name: 'Operations Lead', id: 81, description: 'Manages shops, cancellations, and banners.', status: 'active', fullAccess: false },
 ] as const;
+
+type Role = (typeof initialRoles)[number];
 
 type Permission = {
     view: boolean;
@@ -50,7 +58,7 @@ type Permission = {
 }
 type RolePermissions = Record<string, Permission>;
 
-const permissionsConfig: Record<(typeof initialRoles)[number]['name'], RolePermissions> = {
+const permissionsConfig: Record<Role['name'], RolePermissions> = {
     'Super Admin': {
         Users: { view: true, create: true, edit: true, delete: true },
         Shops: { view: true, create: true, edit: true, delete: true },
@@ -95,6 +103,9 @@ const permissionsConfig: Record<(typeof initialRoles)[number]['name'], RolePermi
         Banners: { view: true, create: true, edit: true, delete: true },
         Settings: { view: false, create: false, edit: false, delete: false },
     },
+    'Analyzer': { Users: { view: true, create: false, edit: false, delete: false }, Shops: { view: true, create: false, edit: false, delete: false }, Rentals: { view: true, create: false, edit: false, delete: false }, Earnings: { view: true, create: false, edit: false, delete: false }, Offers: { view: true, create: false, edit: false, delete: false }, Cancellations: { view: true, create: false, edit: false, delete: false }, Notifications: { view: false, create: false, edit: false, delete: false }, Banners: { view: false, create: false, edit: false, delete: false }, Settings: { view: false, create: false, edit: false, delete: false } },
+    'Project Management': { Users: { view: true, create: false, edit: false, delete: false }, Shops: { view: true, create: false, edit: false, delete: false }, Rentals: { view: true, create: false, edit: false, delete: false }, Earnings: { view: true, create: false, edit: false, delete: false }, Offers: { view: true, create: false, edit: false, delete: false }, Cancellations: { view: true, create: false, edit: false, delete: false }, Notifications: { view: false, create:false, edit: false, delete: false }, Banners: { view: false, create: false, edit: false, delete: false }, Settings: { view: false, create: false, edit: false, delete: false } },
+    'Research Assistant': { Users: { view: true, create: false, edit: false, delete: false }, Shops: { view: true, create: false, edit: false, delete: false }, Rentals: { view: true, create: false, edit: false, delete: false }, Earnings: { view: true, create: false, edit: false, delete: false }, Offers: { view: true, create: false, edit: false, delete: false }, Cancellations: { view: true, create: false, edit: false, delete: false }, Notifications: { view: false, create: false, edit: false, delete: false }, Banners: { view: false, create: false, edit: false, delete: false }, Settings: { view: false, create: false, edit: false, delete: false } },
 };
 
 
@@ -163,7 +174,7 @@ function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin
     )
 }
 
-function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => void; onBack: () => void; roleToEdit?: typeof initialRoles[number] | null }) {
+function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => void; onBack: () => void; roleToEdit?: Role | null }) {
     const [roleName, setRoleName] = useState(roleToEdit?.name || '');
     const [roleDescription, setRoleDescription] = useState(roleToEdit?.description || '');
     const [permissions, setPermissions] = useState<RolePermissions>(roleToEdit ? permissionsConfig[roleToEdit.name] : {});
@@ -256,7 +267,7 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
 export default function AdminControlsPage() {
     const [admins, setAdmins] = useState(initialAdmins);
     const [roles, setRoles] = useState(initialRoles);
-    const [editingRole, setEditingRole] = useState<typeof initialRoles[number] | null>(null);
+    const [editingRole, setEditingRole] = useState<Role | null>(null);
     const [isEditingOrCreatingRole, setIsEditingOrCreatingRole] = useState(false);
     const { toast } = useToast();
 
@@ -286,7 +297,7 @@ export default function AdminControlsPage() {
         // In a real app, you would also update the roles and permissionsConfig state
     };
     
-    const handleEditRole = (role: typeof initialRoles[number]) => {
+    const handleEditRole = (role: Role) => {
         setEditingRole(role);
         setIsEditingOrCreatingRole(true);
     }
@@ -377,21 +388,52 @@ export default function AdminControlsPage() {
                                 <CardTitle>Roles &amp; Permissions</CardTitle>
                                 <CardDescription>Define roles and manage fine-grained permissions for each section of the dashboard.</CardDescription>
                             </div>
-                            <Button onClick={handleCreateRole}><PlusCircle className="mr-2 h-4 w-4" /> Create Role</Button>
+                            <div className="flex items-center gap-2">
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input placeholder="Search roles..." className="pl-8" />
+                                </div>
+                                <Button onClick={handleCreateRole}><PlusCircle className="mr-2 h-4 w-4" /> Create Role</Button>
+                            </div>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            {roles.map(role => (
-                                <Card key={role.name} className="flex items-center justify-between p-4">
-                                    <div>
-                                        <h4 className="font-semibold flex items-center gap-2"><ShieldCheck className="text-primary h-5 w-5" />{role.name}</h4>
-                                        <p className="text-sm text-muted-foreground ml-7">{role.description}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                         <Button variant="outline" size="sm" onClick={() => handleEditRole(role)}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                                        <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
-                                    </div>
-                                </Card>
-                            ))}
+                        <CardContent>
+                             <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Full Access</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {roles.map(role => (
+                                        <TableRow key={role.id}>
+                                            <TableCell>{role.id}</TableCell>
+                                            <TableCell className="font-medium">{role.name}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={role.fullAccess ? 'default' : 'secondary'}>
+                                                    {role.fullAccess ? 'Yes' : 'No'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                 <Badge variant={role.status === 'active' ? 'default' : 'destructive'}>
+                                                    {role.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                     <Button variant="ghost" size="icon" onClick={() => handleEditRole(role)}><Eye className="h-4 w-4" /></Button>
+                                                     <Button variant="ghost" size="icon" onClick={() => handleEditRole(role)}><Edit className="h-4 w-4" /></Button>
+                                                     <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                                     <Switch checked={role.status === 'active'} />
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </CardContent>
                     </Card>
                  )}
@@ -443,3 +485,6 @@ export default function AdminControlsPage() {
     </>
   );
 }
+
+
+    
