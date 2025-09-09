@@ -11,8 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function UserNav() {
+  const router = useRouter();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -34,15 +38,17 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-          </DropdownMenuItem>
+          <Link href="/profile" passHref>
+            <DropdownMenuItem>
+              Profile
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuItem>
             Settings
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/login')}>
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
