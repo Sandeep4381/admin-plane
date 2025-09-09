@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft, Eye } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -152,34 +152,41 @@ const actionLogs = [
     { id: 'LOG003', admin: 'Rohan Sharma', action: 'Suspended Admin', section: 'Admin Controls', timestamp: '2024-07-21 05:00 PM', ip: '172.16.0.1' },
 ];
 
-function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin'>) => void }) {
+function AdminDialog({ onSave, trigger, adminToEdit }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin' | 'status'>, isEditing: boolean) => void, trigger: React.ReactNode, adminToEdit?: Admin | null }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<Admin['role']>('Support Manager');
     const { toast } = useToast();
 
+    React.useEffect(() => {
+        if (adminToEdit) {
+            setName(adminToEdit.name);
+            setEmail(adminToEdit.email);
+            setRole(adminToEdit.role);
+        } else {
+            setName('');
+            setEmail('');
+            setRole('Support Manager');
+        }
+    }, [adminToEdit, open]);
+
     const handleSave = () => {
         if (!name || !email) {
             toast({ title: "Validation Error", description: "Name and email are required.", variant: "destructive" });
             return;
         }
-        onSave({ name, email, role, status: 'active' });
+        onSave({ name, email, role }, !!adminToEdit);
         setOpen(false);
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Sub-Admin
-                </Button>
-            </DialogTrigger>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add New Sub-Admin</DialogTitle>
-                    <DialogDescription>Assign a role and invite a new member to the admin team.</DialogDescription>
+                    <DialogTitle>{adminToEdit ? 'Edit Admin' : 'Add New Sub-Admin'}</DialogTitle>
+                    <DialogDescription>{adminToEdit ? 'Update the details for this administrator.' : 'Assign a role and invite a new member to the admin team.'}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                      <div className="space-y-2">
@@ -192,7 +199,7 @@ function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin
                     </div>
                      <div className="space-y-2">
                         <Label htmlFor="role">Role</Label>
-                        <Select onValueChange={(v: Admin['role']) => setRole(v)} defaultValue={role}>
+                        <Select onValueChange={(v: Admin['role']) => setRole(v)} value={role}>
                             <SelectTrigger id="role">
                                 <SelectValue placeholder="Select a role" />
                             </SelectTrigger>
@@ -204,14 +211,14 @@ function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button onClick={handleSave}>Send Invite</Button>
+                    <Button onClick={handleSave}>{adminToEdit ? 'Save Changes' : 'Send Invite'}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     )
 }
 
-function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => void; onBack: () => void; roleToEdit?: Role | null }) {
+function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: (role: any) => void; onBack: () => void; roleToEdit?: Role | null, viewOnly?: boolean }) {
     const [roleName, setRoleName] = useState(roleToEdit?.name || '');
     const [roleDescription, setRoleDescription] = useState(roleToEdit?.description || '');
     const [permissions, setPermissions] = useState<RolePermissions>(roleToEdit ? permissionsConfig[roleToEdit.name] : {});
@@ -238,6 +245,12 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
         onSave({ name: roleName, description: roleDescription, permissions });
         onBack();
     };
+    
+    const cardTitle = viewOnly 
+        ? `View Role: ${roleToEdit?.name}` 
+        : roleToEdit 
+        ? `Edit Role: ${roleToEdit.name}` 
+        : 'Create New Role';
 
     return (
         <Card>
@@ -247,7 +260,7 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
                         <ArrowLeft />
                     </Button>
                     <div>
-                        <CardTitle>{roleToEdit ? `Edit Role: ${roleToEdit.name}` : 'Create New Role'}</CardTitle>
+                        <CardTitle>{cardTitle}</CardTitle>
                         <CardDescription>Define the role name, description, and permissions.</CardDescription>
                     </div>
                 </div>
@@ -257,11 +270,11 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
                     <div className="md:col-span-1 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="role-name">Role Name</Label>
-                            <Input id="role-name" value={roleName} onChange={(e) => setRoleName(e.target.value)} />
+                            <Input id="role-name" value={roleName} onChange={(e) => setRoleName(e.target.value)} disabled={viewOnly} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="role-description">Description</Label>
-                            <Textarea id="role-description" value={roleDescription} onChange={(e) => setRoleDescription(e.target.value)} rows={5} />
+                            <Textarea id="role-description" value={roleDescription} onChange={(e) => setRoleDescription(e.target.value)} rows={5} disabled={viewOnly} />
                         </div>
                     </div>
                     <div className="md:col-span-2 space-y-4">
@@ -283,6 +296,7 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
                                                     <Checkbox
                                                         checked={permissions[module]?.[type] || false}
                                                         onCheckedChange={(checked) => handlePermissionChange(module, type, !!checked)}
+                                                        disabled={viewOnly}
                                                     />
                                                 </TableCell>
                                             ))}
@@ -294,7 +308,7 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
                     </div>
                 </div>
                  <div className="flex justify-end">
-                    <Button onClick={handleSave}>Save Role</Button>
+                    {!viewOnly && <Button onClick={handleSave}>Save Role</Button>}
                 </div>
             </CardContent>
         </Card>
@@ -305,17 +319,26 @@ export default function AdminControlsPage() {
     const [admins, setAdmins] = useState(initialAdmins);
     const [roles, setRoles] = useState(initialRoles);
     const [editingRole, setEditingRole] = useState<Role | null>(null);
-    const [isEditingOrCreatingRole, setIsEditingOrCreatingRole] = useState(false);
+    const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
+    const [viewingAdmin, setViewingAdmin] = useState<Admin | null>(null);
+    const [isRoleFormVisible, setIsRoleFormVisible] = useState(false);
+    const [isRoleViewOnly, setIsRoleViewOnly] = useState(false);
     const { toast } = useToast();
 
-    const handleSaveAdmin = (newAdminData: Omit<Admin, 'id' | 'lastLogin'>) => {
-        const newAdmin: Admin = {
-            ...newAdminData,
-            id: `ADM${Date.now()}`,
-            lastLogin: 'Never',
+    const handleSaveAdmin = (newAdminData: Omit<Admin, 'id' | 'lastLogin' | 'status'>, isEditing: boolean) => {
+        if (isEditing && editingAdmin) {
+            setAdmins(admins.map(a => a.id === editingAdmin.id ? { ...a, ...newAdminData } : a));
+            toast({ title: "Admin Updated", description: `Details for ${newAdminData.name} updated.` });
+        } else {
+            const newAdmin: Admin = {
+                ...newAdminData,
+                id: `ADM${Date.now()}`,
+                lastLogin: 'Never',
+                status: 'active'
+            }
+            setAdmins([newAdmin, ...admins]);
+            toast({ title: "Admin Invited", description: `An invitation has been sent to ${newAdmin.email}.` });
         }
-        setAdmins([newAdmin, ...admins]);
-        toast({ title: "Admin Invited", description: `An invitation has been sent to ${newAdmin.email}.` });
     }
 
     const handleToggleSuspend = (adminId: string, currentStatus: 'active' | 'suspended') => {
@@ -336,16 +359,24 @@ export default function AdminControlsPage() {
     
     const handleEditRole = (role: Role) => {
         setEditingRole(role);
-        setIsEditingOrCreatingRole(true);
+        setIsRoleViewOnly(false);
+        setIsRoleFormVisible(true);
+    }
+    
+    const handleViewRole = (role: Role) => {
+        setEditingRole(role);
+        setIsRoleViewOnly(true);
+        setIsRoleFormVisible(true);
     }
     
     const handleCreateRole = () => {
         setEditingRole(null);
-        setIsEditingOrCreatingRole(true);
+        setIsRoleViewOnly(false);
+        setIsRoleFormVisible(true);
     }
 
     const handleBackToList = () => {
-        setIsEditingOrCreatingRole(false);
+        setIsRoleFormVisible(false);
         setEditingRole(null);
     }
 
@@ -368,7 +399,15 @@ export default function AdminControlsPage() {
                                 Manage your sub-administrators and their roles.
                             </CardDescription>
                         </div>
-                        <AdminDialog onSave={handleSaveAdmin} />
+                        <AdminDialog 
+                            onSave={handleSaveAdmin} 
+                            trigger={
+                                <Button>
+                                    <PlusCircle className="mr-2 h-4 w-4" />
+                                    Add Sub-Admin
+                                </Button>
+                            }
+                        />
                     </CardHeader>
                     <CardContent>
                        <Table>
@@ -397,7 +436,18 @@ export default function AdminControlsPage() {
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent>
                                                     <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => setViewingAdmin(admin)}>
+                                                        <Eye className="mr-2 h-4 w-4" /> View
+                                                    </DropdownMenuItem>
+                                                    <AdminDialog 
+                                                        onSave={handleSaveAdmin} 
+                                                        adminToEdit={admin} 
+                                                        trigger={
+                                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setEditingAdmin(admin); }}>
+                                                                <Edit className="mr-2 h-4 w-4" /> Edit
+                                                            </DropdownMenuItem>
+                                                        }
+                                                    />
                                                     <DropdownMenuItem onClick={() => handleToggleSuspend(admin.id, admin.status)}>
                                                         <UserX className="mr-2 h-4 w-4" /> {admin.status === 'active' ? 'Suspend' : 'Unsuspend'}
                                                     </DropdownMenuItem>
@@ -416,8 +466,13 @@ export default function AdminControlsPage() {
                 </Card>
             </TabsContent>
             <TabsContent value="roles">
-                 {isEditingOrCreatingRole ? (
-                     <RoleEditor onSave={handleSaveRole} onBack={handleBackToList} roleToEdit={editingRole} />
+                 {isRoleFormVisible ? (
+                     <RoleEditor 
+                        onSave={handleSaveRole} 
+                        onBack={handleBackToList} 
+                        roleToEdit={editingRole} 
+                        viewOnly={isRoleViewOnly}
+                     />
                  ) : (
                      <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
@@ -461,6 +516,7 @@ export default function AdminControlsPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
+                                                     <Button variant="ghost" size="icon" onClick={() => handleViewRole(role)}><Eye className="h-4 w-4" /></Button>
                                                      <Button variant="ghost" size="icon" onClick={() => handleEditRole(role)}><Edit className="h-4 w-4" /></Button>
                                                      <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
                                                      <Switch checked={role.status === 'active'} />
@@ -518,9 +574,24 @@ export default function AdminControlsPage() {
                 </Card>
             </TabsContent>
         </Tabs>
+        
+        <Dialog open={!!viewingAdmin} onOpenChange={(open) => !open && setViewingAdmin(null)}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{viewingAdmin?.name}</DialogTitle>
+                    <DialogDescription>Read-only view of administrator details.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <p><strong>Email:</strong> {viewingAdmin?.email}</p>
+                    <p><strong>Role:</strong> {viewingAdmin?.role}</p>
+                    <p><strong>Status:</strong> <Badge variant={viewingAdmin?.status === 'active' ? 'default' : 'destructive'}>{viewingAdmin?.status}</Badge></p>
+                    <p><strong>Last Login:</strong> {viewingAdmin?.lastLogin}</p>
+                </div>
+                 <DialogFooter>
+                    <Button onClick={() => setViewingAdmin(null)}>Close</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </>
   );
 }
-
-
-    
