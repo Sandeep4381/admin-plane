@@ -5,7 +5,7 @@ import { Car, LayoutDashboard, Store, Users2, TicketPercent, FileX2, Wallet, Bel
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/shops", label: "Shops", icon: Store },
   { href: "/users", label: "Users", icon: Users2 },
   { href: "/rentals", label: "Rentals", icon: Car },

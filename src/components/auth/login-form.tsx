@@ -27,7 +27,7 @@ export function LoginForm() {
                     title: "Login Successful",
                     description: "Welcome back, Admin!",
                 });
-                router.push('/');
+                router.push('/dashboard');
             } else {
                 toast({
                     title: "Login Failed",
