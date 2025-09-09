@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 type Admin = {
   id: string;
@@ -31,13 +33,70 @@ const initialAdmins: Admin[] = [
   { id: 'ADM002', name: 'Priya Singh', email: 'priya.singh@example.com', role: 'Support Manager', lastLogin: '2024-07-22 09:45 AM', status: 'active' },
   { id: 'ADM003', name: 'Amit Patel', email: 'amit.patel@example.com', role: 'Finance Head', lastLogin: '2024-07-21 03:15 PM', status: 'active' },
   { id: 'ADM004', name: 'Sunita Rao', email: 'sunita.rao@example.com', role: 'Operations Lead', lastLogin: '2024-07-20 11:00 AM', status: 'suspended' },
+  { id: 'ADM005', name: 'Rahul Kumar', email: 'rahul@gmail.com', role: 'Finance Head', lastLogin: 'Never', status: 'active' },
 ];
 
-const roles = ['Super Admin', 'Support Manager', 'Finance Head', 'Operations Lead'] as const;
+const initialRoles = [
+  { name: 'Super Admin', description: 'Full access to all dashboard features.' },
+  { name: 'Support Manager', description: 'Manages users, rentals, and notifications.' },
+  { name: 'Finance Head', description: 'Access to earnings, payouts, and financial reports.' },
+  { name: 'Operations Lead', description: 'Manages shops, cancellations, and banners.' },
+] as const;
 
-const permissions = [
-    'Users', 'Shops', 'Rentals', 'Earnings', 'Offers', 'Cancellations', 'Notifications', 'Banners', 'Settings'
-];
+type Permission = {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+}
+type RolePermissions = Record<string, Permission>;
+
+const permissionsConfig: Record<(typeof initialRoles)[number]['name'], RolePermissions> = {
+    'Super Admin': {
+        Users: { view: true, create: true, edit: true, delete: true },
+        Shops: { view: true, create: true, edit: true, delete: true },
+        Rentals: { view: true, create: true, edit: true, delete: true },
+        Earnings: { view: true, create: true, edit: true, delete: true },
+        Offers: { view: true, create: true, edit: true, delete: true },
+        Cancellations: { view: true, create: true, edit: true, delete: true },
+        Notifications: { view: true, create: true, edit: true, delete: true },
+        Banners: { view: true, create: true, edit: true, delete: true },
+        Settings: { view: true, create: true, edit: true, delete: true },
+    },
+    'Support Manager': {
+        Users: { view: true, create: true, edit: true, delete: false },
+        Shops: { view: true, create: false, edit: true, delete: false },
+        Rentals: { view: true, create: false, edit: true, delete: false },
+        Earnings: { view: false, create: false, edit: false, delete: false },
+        Offers: { view: true, create: false, edit: false, delete: false },
+        Cancellations: { view: true, create: false, edit: true, delete: false },
+        Notifications: { view: true, create: true, edit: true, delete: false },
+        Banners: { view: false, create: false, edit: false, delete: false },
+        Settings: { view: true, create: false, edit: true, delete: false },
+    },
+    'Finance Head': {
+        Users: { view: true, create: false, edit: false, delete: false },
+        Shops: { view: true, create: false, edit: false, delete: false },
+        Rentals: { view: true, create: false, edit: false, delete: false },
+        Earnings: { view: true, create: true, edit: true, delete: false },
+        Offers: { view: true, create: true, edit: true, delete: false },
+        Cancellations: { view: true, create: false, edit: false, delete: false },
+        Notifications: { view: false, create: false, edit: false, delete: false },
+        Banners: { view: false, create: false, edit: false, delete: false },
+        Settings: { view: true, create: false, edit: true, delete: false },
+    },
+    'Operations Lead': {
+        Users: { view: false, create: false, edit: false, delete: false },
+        Shops: { view: true, create: true, edit: true, delete: true },
+        Rentals: { view: true, create: false, edit: true, delete: true },
+        Earnings: { view: false, create: false, edit: false, delete: false },
+        Offers: { view: true, create: true, edit: false, delete: false },
+        Cancellations: { view: true, create: false, edit: false, delete: false },
+        Notifications: { view: true, create: true, edit: false, delete: false },
+        Banners: { view: true, create: true, edit: true, delete: true },
+        Settings: { view: false, create: false, edit: false, delete: false },
+    },
+};
 
 
 const actionLogs = [
@@ -91,7 +150,7 @@ function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin
                                 <SelectValue placeholder="Select a role" />
                             </SelectTrigger>
                             <SelectContent>
-                                {roles.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                {initialRoles.map(r => <SelectItem key={r.name} value={r.name}>{r.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -105,8 +164,94 @@ function AdminDialog({ onSave }: { onSave: (admin: Omit<Admin, 'id' | 'lastLogin
     )
 }
 
+function RoleDialog({ onSave, trigger, roleToEdit }: { onSave: (role: any) => void; trigger: React.ReactNode; roleToEdit?: typeof initialRoles[number] }) {
+    const [open, setOpen] = useState(false);
+    const [roleName, setRoleName] = useState(roleToEdit?.name || '');
+    const [roleDescription, setRoleDescription] = useState(roleToEdit?.description || '');
+    const [permissions, setPermissions] = useState<RolePermissions>(roleToEdit ? permissionsConfig[roleToEdit.name] : {});
+    const { toast } = useToast();
+    
+    const permissionModules = ['Users', 'Shops', 'Rentals', 'Earnings', 'Offers', 'Cancellations', 'Notifications', 'Banners', 'Settings'];
+    const permissionTypes = ['view', 'create', 'edit', 'delete'] as const;
+
+    const handlePermissionChange = (module: string, type: 'view' | 'create' | 'edit' | 'delete', checked: boolean) => {
+        setPermissions(prev => ({
+            ...prev,
+            [module]: {
+                ...prev[module],
+                [type]: checked,
+            }
+        }));
+    };
+
+    const handleSave = () => {
+        // Validation logic
+        if (!roleName) {
+            toast({ title: "Validation Error", description: "Role name is required.", variant: "destructive" });
+            return;
+        }
+        onSave({ name: roleName, description: roleDescription, permissions });
+        setOpen(false);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            <DialogContent className="max-w-3xl">
+                <DialogHeader>
+                    <DialogTitle>{roleToEdit ? `Edit Role: ${roleToEdit.name}` : 'Create New Role'}</DialogTitle>
+                    <DialogDescription>Define the role name, description, and permissions.</DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+                     <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="role-name">Role Name</Label>
+                            <Input id="role-name" value={roleName} onChange={(e) => setRoleName(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="role-description">Description</Label>
+                            <Textarea id="role-description" value={roleDescription} onChange={(e) => setRoleDescription(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Permissions Matrix</h3>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Module</TableHead>
+                                    {permissionTypes.map(p => <TableHead key={p} className="capitalize text-center">{p}</TableHead>)}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {permissionModules.map(module => (
+                                    <TableRow key={module}>
+                                        <TableCell className="font-medium">{module}</TableCell>
+                                        {permissionTypes.map(type => (
+                                            <TableCell key={type} className="text-center">
+                                                <Checkbox
+                                                    checked={permissions[module]?.[type] || false}
+                                                    onCheckedChange={(checked) => handlePermissionChange(module, type, !!checked)}
+                                                />
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button onClick={handleSave}>Save Role</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function AdminControlsPage() {
     const [admins, setAdmins] = useState(initialAdmins);
+    const [roles, setRoles] = useState(initialRoles);
     const { toast } = useToast();
 
     const handleSaveAdmin = (newAdminData: Omit<Admin, 'id' | 'lastLogin'>) => {
@@ -130,13 +275,19 @@ export default function AdminControlsPage() {
         toast({ title: "Admin Deleted", variant: "destructive" });
     }
 
+    const handleSaveRole = (role: any) => {
+        // This is a mock save. In a real app, you'd update state or call an API.
+        toast({ title: "Role Saved", description: `Permissions for ${role.name} have been updated.` });
+    };
+
+
   return (
     <>
         <PageHeader title="Admin Controls" />
         <Tabs defaultValue="admins" className="space-y-6">
             <TabsList>
                 <TabsTrigger value="admins">Manage Admins</TabsTrigger>
-                <TabsTrigger value="roles">Roles & Permissions</TabsTrigger>
+                <TabsTrigger value="roles">Roles &amp; Permissions</TabsTrigger>
                 <TabsTrigger value="logs">Action Logs</TabsTrigger>
             </TabsList>
             <TabsContent value="admins">
@@ -197,33 +348,33 @@ export default function AdminControlsPage() {
             </TabsContent>
             <TabsContent value="roles">
                  <Card>
-                    <CardHeader>
-                        <CardTitle>Roles & Permissions</CardTitle>
-                        <CardDescription>Define roles and manage fine-grained permissions for each section of the dashboard.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                           <Table className="min-w-full">
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Permission</TableHead>
-                                        {roles.map(role => <TableHead key={role} className="text-center">{role}</TableHead>)}
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {permissions.map(permission => (
-                                        <TableRow key={permission}>
-                                            <TableCell className="font-medium">{permission}</TableCell>
-                                            {roles.map(role => (
-                                                <TableCell key={`${permission}-${role}`} className="text-center">
-                                                    <Checkbox defaultChecked={role === 'Super Admin' || (permission !== 'Admin Controls' && permission !== 'Earnings')} />
-                                                </TableCell>
-                                            ))}
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Roles &amp; Permissions</CardTitle>
+                            <CardDescription>Define roles and manage fine-grained permissions for each section of the dashboard.</CardDescription>
                         </div>
+                        <RoleDialog
+                            trigger={<Button><PlusCircle className="mr-2 h-4 w-4" /> Create Role</Button>}
+                            onSave={handleSaveRole}
+                        />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {roles.map(role => (
+                            <Card key={role.name} className="flex items-center justify-between p-4">
+                                <div>
+                                    <h4 className="font-semibold flex items-center gap-2"><ShieldCheck className="text-primary h-5 w-5" />{role.name}</h4>
+                                    <p className="text-sm text-muted-foreground ml-7">{role.description}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                     <RoleDialog
+                                        trigger={<Button variant="outline" size="sm"><Edit className="mr-2 h-4 w-4" /> Edit</Button>}
+                                        roleToEdit={role}
+                                        onSave={handleSaveRole}
+                                    />
+                                    <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button>
+                                </div>
+                            </Card>
+                        ))}
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -274,3 +425,5 @@ export default function AdminControlsPage() {
     </>
   );
 }
+
+    
