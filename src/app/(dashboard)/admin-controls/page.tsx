@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState } from 'react';
@@ -51,96 +52,96 @@ type Role = (typeof initialRoles)[number];
 
 type Permission = {
     view: boolean;
-    create: boolean;
+    add: boolean;
     edit: boolean;
-    delete: boolean;
+    'disable-delete': boolean;
 }
 type RolePermissions = Record<string, Permission>;
 
 const permissionsConfig: Record<Role['name'], RolePermissions> = {
     'Super Admin': {
-        Dashboard: { view: true, create: true, edit: true, delete: true },
-        Users: { view: true, create: true, edit: true, delete: true },
-        Shops: { view: true, create: true, edit: true, delete: true },
-        Rentals: { view: true, create: true, edit: true, delete: true },
-        Earnings: { view: true, create: true, edit: true, delete: true },
-        Offers: { view: true, create: true, edit: true, delete: true },
-        Cancellations: { view: true, create: true, edit: true, delete: true },
-        Notifications: { view: true, create: true, edit: true, delete: true },
-        Banners: { view: true, create: true, edit: true, delete: true },
-        'Admin Controls': { view: true, create: true, edit: true, delete: true },
+        Dashboard: { view: true, add: true, edit: true, 'disable-delete': true },
+        Users: { view: true, add: true, edit: true, 'disable-delete': true },
+        Shops: { view: true, add: true, edit: true, 'disable-delete': true },
+        Rentals: { view: true, add: true, edit: true, 'disable-delete': true },
+        Earnings: { view: true, add: true, edit: true, 'disable-delete': true },
+        Offers: { view: true, add: true, edit: true, 'disable-delete': true },
+        Cancellations: { view: true, add: true, edit: true, 'disable-delete': true },
+        Notifications: { view: true, add: true, edit: true, 'disable-delete': true },
+        Banners: { view: true, add: true, edit: true, 'disable-delete': true },
+        'Admin Controls': { view: true, add: true, edit: true, 'disable-delete': true },
     },
     'Support Manager': {
-        Dashboard: { view: true, create: false, edit: false, delete: false },
-        Users: { view: true, create: true, edit: true, delete: false },
-        Shops: { view: true, create: false, edit: true, delete: false },
-        Rentals: { view: true, create: false, edit: true, delete: false },
-        Earnings: { view: false, create: false, edit: false, delete: false },
-        Offers: { view: true, create: false, edit: false, delete: false },
-        Cancellations: { view: true, create: false, edit: true, delete: false },
-        Notifications: { view: true, create: true, edit: true, delete: false },
-        Banners: { view: false, create: false, edit: false, delete: false },
-        'Admin Controls': { view: false, create: false, edit: false, delete: false },
+        Dashboard: { view: true, add: false, edit: false, 'disable-delete': false },
+        Users: { view: true, add: true, edit: true, 'disable-delete': false },
+        Shops: { view: true, add: false, edit: true, 'disable-delete': false },
+        Rentals: { view: true, add: false, edit: true, 'disable-delete': false },
+        Earnings: { view: false, add: false, edit: false, 'disable-delete': false },
+        Offers: { view: true, add: false, edit: false, 'disable-delete': false },
+        Cancellations: { view: true, add: false, edit: true, 'disable-delete': false },
+        Notifications: { view: true, add: true, edit: true, 'disable-delete': false },
+        Banners: { view: false, add: false, edit: false, 'disable-delete': false },
+        'Admin Controls': { view: false, add: false, edit: false, 'disable-delete': false },
     },
     'Finance Head': {
-        Dashboard: { view: true, create: false, edit: false, delete: false },
-        Users: { view: true, create: false, edit: false, delete: false },
-        Shops: { view: true, create: false, edit: false, delete: false },
-        Rentals: { view: true, create: false, edit: false, delete: false },
-        Earnings: { view: true, create: true, edit: true, delete: false },
-        Offers: { view: true, create: true, edit: true, delete: false },
-        Cancellations: { view: true, create: false, edit: false, delete: false },
-        Notifications: { view: false, create: false, edit: false, delete: false },
-        Banners: { view: false, create: false, edit: false, delete: false },
-        'Admin Controls': { view: false, create: false, edit: false, delete: false },
+        Dashboard: { view: true, add: false, edit: false, 'disable-delete': false },
+        Users: { view: true, add: false, edit: false, 'disable-delete': false },
+        Shops: { view: true, add: false, edit: false, 'disable-delete': false },
+        Rentals: { view: true, add: false, edit: false, 'disable-delete': false },
+        Earnings: { view: true, add: true, edit: true, 'disable-delete': false },
+        Offers: { view: true, add: true, edit: true, 'disable-delete': false },
+        Cancellations: { view: true, add: false, edit: false, 'disable-delete': false },
+        Notifications: { view: false, add: false, edit: false, 'disable-delete': false },
+        Banners: { view: false, add: false, edit: false, 'disable-delete': false },
+        'Admin Controls': { view: false, add: false, edit: false, 'disable-delete': false },
     },
     'Operations Lead': {
-        Dashboard: { view: true, create: false, edit: false, delete: false },
-        Users: { view: false, create: false, edit: false, delete: false },
-        Shops: { view: true, create: true, edit: true, delete: true },
-        Rentals: { view: true, create: false, edit: true, delete: true },
-        Earnings: { view: false, create: false, edit: false, delete: false },
-        Offers: { view: true, create: true, edit: false, delete: false },
-        Cancellations: { view: true, create: false, edit: false, delete: false },
-        Notifications: { view: true, create: true, edit: false, delete: false },
-        Banners: { view: true, create: true, edit: true, delete: true },
-        'Admin Controls': { view: false, create: false, edit: false, delete: false },
+        Dashboard: { view: true, add: false, edit: false, 'disable-delete': false },
+        Users: { view: false, add: false, edit: false, 'disable-delete': false },
+        Shops: { view: true, add: true, edit: true, 'disable-delete': true },
+        Rentals: { view: true, add: false, edit: true, 'disable-delete': true },
+        Earnings: { view: false, add: false, edit: false, 'disable-delete': false },
+        Offers: { view: true, add: true, edit: false, 'disable-delete': false },
+        Cancellations: { view: true, add: false, edit: false, 'disable-delete': false },
+        Notifications: { view: true, add: true, edit: false, 'disable-delete': false },
+        Banners: { view: true, add: true, edit: true, 'disable-delete': true },
+        'Admin Controls': { view: false, add: false, edit: false, 'disable-delete': false },
     },
     'Analyzer': { 
-        Dashboard: { view: true, create: false, edit: false, delete: false },
-        Users: { view: true, create: false, edit: false, delete: false }, 
-        Shops: { view: true, create: false, edit: false, delete: false }, 
-        Rentals: { view: true, create: false, edit: false, delete: false }, 
-        Earnings: { view: true, create: false, edit: false, delete: false }, 
-        Offers: { view: true, create: false, edit: false, delete: false }, 
-        Cancellations: { view: true, create: false, edit: false, delete: false }, 
-        Notifications: { view: false, create: false, edit: false, delete: false }, 
-        Banners: { view: false, create: false, edit: false, delete: false },
-        'Admin Controls': { view: false, create: false, edit: false, delete: false }
+        Dashboard: { view: true, add: false, edit: false, 'disable-delete': false },
+        Users: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Shops: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Rentals: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Earnings: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Offers: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Cancellations: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Notifications: { view: false, add: false, edit: false, 'disable-delete': false }, 
+        Banners: { view: false, add: false, edit: false, 'disable-delete': false },
+        'Admin Controls': { view: false, add: false, edit: false, 'disable-delete': false }
     },
     'Project Management': { 
-        Dashboard: { view: true, create: false, edit: false, delete: false },
-        Users: { view: true, create: false, edit: false, delete: false }, 
-        Shops: { view: true, create: false, edit: false, delete: false }, 
-        Rentals: { view: true, create: false, edit: false, delete: false }, 
-        Earnings: { view: true, create: false, edit: false, delete: false }, 
-        Offers: { view: true, create: false, edit: false, delete: false }, 
-        Cancellations: { view: true, create: false, edit: false, delete: false }, 
-        Notifications: { view: false, create:false, edit: false, delete: false }, 
-        Banners: { view: false, create: false, edit: false, delete: false },
-        'Admin Controls': { view: false, create: false, edit: false, delete: false }
+        Dashboard: { view: true, add: false, edit: false, 'disable-delete': false },
+        Users: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Shops: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Rentals: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Earnings: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Offers: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Cancellations: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Notifications: { view: false, add:false, edit: false, 'disable-delete': false }, 
+        Banners: { view: false, add: false, edit: false, 'disable-delete': false },
+        'Admin Controls': { view: false, add: false, edit: false, 'disable-delete': false }
     },
     'Research Assistant': { 
-        Dashboard: { view: true, create: false, edit: false, delete: false },
-        Users: { view: true, create: false, edit: false, delete: false }, 
-        Shops: { view: true, create: false, edit: false, delete: false }, 
-        Rentals: { view: true, create: false, edit: false, delete: false }, 
-        Earnings: { view: true, create: false, edit: false, delete: false }, 
-        Offers: { view: true, create: false, edit: false, delete: false }, 
-        Cancellations: { view: true, create: false, edit: false, delete: false }, 
-        Notifications: { view: false, create: false, edit: false, delete: false }, 
-        Banners: { view: false, create: false, edit: false, delete: false },
-        'Admin Controls': { view: false, create: false, edit: false, delete: false }
+        Dashboard: { view: true, add: false, edit: false, 'disable-delete': false },
+        Users: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Shops: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Rentals: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Earnings: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Offers: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Cancellations: { view: true, add: false, edit: false, 'disable-delete': false }, 
+        Notifications: { view: false, add: false, edit: false, 'disable-delete': false }, 
+        Banners: { view: false, add: false, edit: false, 'disable-delete': false },
+        'Admin Controls': { view: false, add: false, edit: false, 'disable-delete': false }
     },
 };
 
@@ -219,14 +220,13 @@ function AdminDialog({ onSave, trigger, adminToEdit }: { onSave: (admin: Omit<Ad
 
 function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: (role: any) => void; onBack: () => void; roleToEdit?: Role | null, viewOnly?: boolean }) {
     const [roleName, setRoleName] = useState(roleToEdit?.name || '');
-    const [roleDescription, setRoleDescription] = useState(roleToEdit?.description || '');
     const [permissions, setPermissions] = useState<RolePermissions>(roleToEdit ? permissionsConfig[roleToEdit.name] : {});
     const { toast } = useToast();
     
     const permissionModules = ['Dashboard', 'Users', 'Shops', 'Rentals', 'Earnings', 'Offers', 'Cancellations', 'Notifications', 'Banners', 'Admin Controls'];
-    const permissionTypes = ['view', 'create', 'edit', 'delete'] as const;
+    const permissionTypes: Array<keyof Permission> = ['view', 'add', 'edit', 'disable-delete'];
 
-    const handlePermissionChange = (module: string, type: 'view' | 'create' | 'edit' | 'delete', checked: boolean) => {
+    const handlePermissionChange = (module: string, type: keyof Permission, checked: boolean) => {
         setPermissions(prev => ({
             ...prev,
             [module]: {
@@ -236,13 +236,15 @@ function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: 
         }));
     };
     
-    const handleSelectAll = (type: 'view' | 'create' | 'edit' | 'delete', checked: boolean) => {
-        const newPermissions = { ...permissions };
+    const handleSelectAll = (checked: boolean) => {
+        const newPermissions: RolePermissions = {};
         permissionModules.forEach(module => {
-            if (!newPermissions[module]) {
-                newPermissions[module] = { view: false, create: false, edit: false, delete: false };
-            }
-            newPermissions[module][type] = checked;
+            newPermissions[module] = {
+                view: checked,
+                add: checked,
+                edit: checked,
+                'disable-delete': checked,
+            };
         });
         setPermissions(newPermissions);
     };
@@ -252,7 +254,7 @@ function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: 
             toast({ title: "Validation Error", description: "Role name is required.", variant: "destructive" });
             return;
         }
-        onSave({ name: roleName, description: roleDescription, permissions });
+        onSave({ name: roleName, permissions });
         onBack();
     };
     
@@ -260,46 +262,49 @@ function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: 
         ? `View Role: ${roleToEdit?.name}` 
         : roleToEdit 
         ? `Edit Role: ${roleToEdit.name}` 
-        : 'Create New Role';
+        : 'Add Role';
 
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-center gap-4">
-                     <Button variant="outline" size="icon" onClick={onBack}>
-                        <ArrowLeft />
-                    </Button>
-                    <div>
-                        <CardTitle>{cardTitle}</CardTitle>
-                        <CardDescription>Define the role name, description, and permissions.</CardDescription>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Button variant="outline" size="icon" onClick={onBack}>
+                            <ArrowLeft />
+                        </Button>
+                        <div>
+                            <CardTitle>{cardTitle}</CardTitle>
+                        </div>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-1 space-y-4">
+                <div className="space-y-6 p-4 border rounded-lg">
+                    <div className="flex items-center justify-between">
                         <div className="space-y-2">
-                            <Label htmlFor="role-name">Role Name</Label>
-                            <Input id="role-name" value={roleName} onChange={(e) => setRoleName(e.target.value)} disabled={viewOnly} />
+                            <Label htmlFor="role-name" className="text-base">Role Title *</Label>
+                            <Input id="role-name" value={roleName} onChange={(e) => setRoleName(e.target.value)} disabled={viewOnly} className="w-80" />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="role-description">Description</Label>
-                            <Textarea id="role-description" value={roleDescription} onChange={(e) => setRoleDescription(e.target.value)} rows={5} disabled={viewOnly} />
+                        <div className="flex items-center space-x-2">
+                           <Checkbox 
+                                id="has-all-permissions" 
+                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                disabled={viewOnly}
+                            />
+                            <Label htmlFor="has-all-permissions">Has All Permissions</Label>
                         </div>
                     </div>
-                    <div className="md:col-span-2 space-y-4">
-                        <h3 className="font-semibold text-lg">Permissions Matrix</h3>
+
+                    <div className="space-y-4">
+                        <h3 className="font-semibold text-lg">Admin Modules List</h3>
                         <div className="border rounded-lg overflow-x-auto">
                            <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Module</TableHead>
+                                        <TableHead className="font-bold text-foreground">MODULE NAME</TableHead>
                                         {permissionTypes.map(p => (
-                                            <TableHead key={p} className="capitalize text-center">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span>{p}</span>
-                                                    {!viewOnly && <Checkbox onCheckedChange={(checked) => handleSelectAll(p, !!checked)} />}
-                                                </div>
+                                            <TableHead key={p} className="capitalize text-center font-bold text-foreground">
+                                                {p.replace('-', ' - ').toUpperCase()}
                                             </TableHead>
                                         ))}
                                     </TableRow>
@@ -612,3 +617,5 @@ export default function AdminControlsPage() {
     </>
   );
 }
+
+    
