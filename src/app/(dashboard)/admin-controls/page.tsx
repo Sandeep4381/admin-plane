@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { useState } from 'react';
@@ -236,6 +235,17 @@ function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: 
             }
         }));
     };
+    
+    const handleSelectAll = (type: 'view' | 'create' | 'edit' | 'delete', checked: boolean) => {
+        const newPermissions = { ...permissions };
+        permissionModules.forEach(module => {
+            if (!newPermissions[module]) {
+                newPermissions[module] = { view: false, create: false, edit: false, delete: false };
+            }
+            newPermissions[module][type] = checked;
+        });
+        setPermissions(newPermissions);
+    };
 
     const handleSave = () => {
         if (!roleName) {
@@ -284,7 +294,14 @@ function RoleEditor({ onSave, onBack, roleToEdit, viewOnly = false }: { onSave: 
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Module</TableHead>
-                                        {permissionTypes.map(p => <TableHead key={p} className="capitalize text-center">{p}</TableHead>)}
+                                        {permissionTypes.map(p => (
+                                            <TableHead key={p} className="capitalize text-center">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <span>{p}</span>
+                                                    {!viewOnly && <Checkbox onCheckedChange={(checked) => handleSelectAll(p, !!checked)} />}
+                                                </div>
+                                            </TableHead>
+                                        ))}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
