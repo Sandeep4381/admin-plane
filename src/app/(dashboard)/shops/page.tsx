@@ -267,86 +267,88 @@ function ShopsPageContent() {
   
 
   const ShopsTable = ({ shopsToShow }: { shopsToShow: Shop[] }) => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Shop ID</TableHead>
-          <TableHead>Shop Name</TableHead>
-          <TableHead>City</TableHead>
-          <TableHead>Owner</TableHead>
-          <TableHead>Verified</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead><span className="sr-only">Actions</span></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {shopsToShow.map((shop) => (
-          <TableRow key={shop.id}>
-            <TableCell className="font-medium">{shop.id}</TableCell>
-            <TableCell className="font-medium">{shop.name}</TableCell>
-            <TableCell>{shop.city}</TableCell>
-            <TableCell>{shop.owner}</TableCell>
-            <TableCell>
-              <Checkbox checked={shop.verified} aria-label="Verified" disabled />
-            </TableCell>
-            <TableCell className="capitalize">{shop.status}</TableCell>
-            <TableCell>
-              {shop.status === 'pending' ? (
-                <Button variant="outline" size="sm" onClick={() => handleVerifyOpen(shop)}>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Verify
-                </Button>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button aria-haspopup="true" size="icon" variant="ghost">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
-                    
-                    {shop.status !== 'blocked' && shop.status !== 'restricted' && (
-                       <ActionDialog
-                          triggerText="Restrict"
-                          title="Are you sure you want to restrict this shop?"
-                          description="This action will limit the shop's visibility or functionality. Please provide a reason."
-                          onAction={(reason) => handleRestrict(shop.id, reason)}
-                        />
-                    )}
-                    
-                    {shop.status !== 'blocked' ? (
-                       <ActionDialog
-                          triggerText="Block"
-                          title="Are you sure you want to block this shop?"
-                          description="This action will prevent the shop from appearing in the app. Please provide a reason."
-                          onAction={(reason) => handleBlock(shop.id, reason)}
-                          destructive
-                        />
-                    ) : (
-                      <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
-                    )}
-                    
-                    <DropdownMenuSeparator />
-                    
-                    <ActionDialog
-                      triggerText="Delete"
-                      title="Are you absolutely sure?"
-                      description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
-                      onAction={(reason) => handleDelete(shop.id, reason)}
-                      destructive={true}
-                    />
-
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </TableCell>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Shop ID</TableHead>
+            <TableHead>Shop Name</TableHead>
+            <TableHead>City</TableHead>
+            <TableHead>Owner</TableHead>
+            <TableHead>Verified</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead><span className="sr-only">Actions</span></TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {shopsToShow.map((shop) => (
+            <TableRow key={shop.id}>
+              <TableCell className="font-medium">{shop.id}</TableCell>
+              <TableCell className="font-medium">{shop.name}</TableCell>
+              <TableCell>{shop.city}</TableCell>
+              <TableCell>{shop.owner}</TableCell>
+              <TableCell>
+                <Checkbox checked={shop.verified} aria-label="Verified" disabled />
+              </TableCell>
+              <TableCell className="capitalize">{shop.status}</TableCell>
+              <TableCell>
+                {shop.status === 'pending' ? (
+                  <Button variant="outline" size="sm" onClick={() => handleVerifyOpen(shop)}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Verify
+                  </Button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button aria-haspopup="true" size="icon" variant="ghost">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Toggle menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
+                      
+                      {shop.status !== 'blocked' && shop.status !== 'restricted' && (
+                         <ActionDialog
+                            triggerText="Restrict"
+                            title="Are you sure you want to restrict this shop?"
+                            description="This action will limit the shop's visibility or functionality. Please provide a reason."
+                            onAction={(reason) => handleRestrict(shop.id, reason)}
+                          />
+                      )}
+                      
+                      {shop.status !== 'blocked' ? (
+                         <ActionDialog
+                            triggerText="Block"
+                            title="Are you sure you want to block this shop?"
+                            description="This action will prevent the shop from appearing in the app. Please provide a reason."
+                            onAction={(reason) => handleBlock(shop.id, reason)}
+                            destructive
+                          />
+                      ) : (
+                        <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
+                      )}
+                      
+                      <DropdownMenuSeparator />
+                      
+                      <ActionDialog
+                        triggerText="Delete"
+                        title="Are you absolutely sure?"
+                        description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
+                        onAction={(reason) => handleDelete(shop.id, reason)}
+                        destructive={true}
+                      />
+
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 
   const ShopListContent = ({ title, description, shopsToShow }: { title: string, description: string, shopsToShow: Shop[] }) => (
@@ -369,22 +371,24 @@ function ShopsPageContent() {
     <>
        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <PageHeader title="Shops" >
-            <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Search shops..."
-                    className="pl-8"
-                    value={currentSearch}
-                    onChange={handleSearchChange}
-                />
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search shops..."
+                        className="pl-8 sm:w-64"
+                        value={currentSearch}
+                        onChange={handleSearchChange}
+                    />
+                </div>
+                <DialogTrigger asChild>
+                    <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Shop
+                    </Button>
+                </DialogTrigger>
             </div>
-            <DialogTrigger asChild>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Shop
-                </Button>
-            </DialogTrigger>
         </PageHeader>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -414,7 +418,7 @@ function ShopsPageContent() {
         </DialogContent>
       </Dialog>
       <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
-        <TabsList>
+        <TabsList className="overflow-x-auto whitespace-nowrap h-auto justify-start">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
           <TabsTrigger value="pending">
@@ -475,58 +479,6 @@ function ShopsPageContent() {
           />
         </TabsContent>
       </Tabs>
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Shop</DialogTitle>
-            <DialogDescription>
-              Make changes to the shop details here. Click save when you're done.
-            </DialogDescription>
-          </DialogHeader>
-          {editingShop && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  value={editingShop.name}
-                  onChange={(e) => setEditingShop({ ...editingShop, name: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="city" className="text-right">
-                  City
-                </Label>
-                <Input
-                  id="city"
-                  value={editingShop.city}
-                  onChange={(e) => setEditingShop({ ...editingShop, city: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="owner" className="text-right">
-                  Owner
-                </Label>
-                <Input
-                  id="owner"
-                  value={editingShop.owner}
-                  onChange={(e) => setEditingShop({ ...editingShop, owner: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-            <Button type="submit" onClick={handleEditSave}>Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
       <Dialog open={isVerificationDialogOpen} onOpenChange={setIsVerificationDialogOpen}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>

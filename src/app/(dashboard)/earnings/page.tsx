@@ -134,6 +134,7 @@ export default function EarningsPage() {
                     </CardDescription>
                     </CardHeader>
                     <CardContent>
+                       <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -156,6 +157,7 @@ export default function EarningsPage() {
                                 ))}
                             </TableBody>
                         </Table>
+                       </div>
                     </CardContent>
                 </Card>
             </div>
@@ -173,6 +175,7 @@ export default function EarningsPage() {
                         <CardTitle>Shop Leaderboard</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        <div className="overflow-x-auto">
                          <Table>
                             <TableHeader>
                                 <TableRow>
@@ -191,6 +194,7 @@ export default function EarningsPage() {
                                 ))}
                             </TableBody>
                         </Table>
+                        </div>
                     </CardContent>
                 </Card>
                  <Card>
@@ -229,5 +233,3 @@ export default function EarningsPage() {
     </>
   );
 }
-
-    

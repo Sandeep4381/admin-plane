@@ -11,7 +11,7 @@ export default function DashboardPage() {
       <PageHeader title="Dashboard" />
       <div className="space-y-6">
         <StatsCards />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-7">
           <Card className="lg:col-span-4">
             <CardHeader>
               <CardTitle>Rentals Overview</CardTitle>
@@ -29,7 +29,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-7">
             <Card className="lg:col-span-3">
                 <CardHeader>
                 <CardTitle>Cancellation Ratio</CardTitle>
