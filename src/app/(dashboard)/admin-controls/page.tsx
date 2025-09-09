@@ -60,6 +60,7 @@ type RolePermissions = Record<string, Permission>;
 
 const permissionsConfig: Record<Role['name'], RolePermissions> = {
     'Super Admin': {
+        Dashboard: { view: true, create: true, edit: true, delete: true },
         Users: { view: true, create: true, edit: true, delete: true },
         Shops: { view: true, create: true, edit: true, delete: true },
         Rentals: { view: true, create: true, edit: true, delete: true },
@@ -68,9 +69,10 @@ const permissionsConfig: Record<Role['name'], RolePermissions> = {
         Cancellations: { view: true, create: true, edit: true, delete: true },
         Notifications: { view: true, create: true, edit: true, delete: true },
         Banners: { view: true, create: true, edit: true, delete: true },
-        Settings: { view: true, create: true, edit: true, delete: true },
+        'Admin Controls': { view: true, create: true, edit: true, delete: true },
     },
     'Support Manager': {
+        Dashboard: { view: true, create: false, edit: false, delete: false },
         Users: { view: true, create: true, edit: true, delete: false },
         Shops: { view: true, create: false, edit: true, delete: false },
         Rentals: { view: true, create: false, edit: true, delete: false },
@@ -79,9 +81,10 @@ const permissionsConfig: Record<Role['name'], RolePermissions> = {
         Cancellations: { view: true, create: false, edit: true, delete: false },
         Notifications: { view: true, create: true, edit: true, delete: false },
         Banners: { view: false, create: false, edit: false, delete: false },
-        Settings: { view: true, create: false, edit: true, delete: false },
+        'Admin Controls': { view: false, create: false, edit: false, delete: false },
     },
     'Finance Head': {
+        Dashboard: { view: true, create: false, edit: false, delete: false },
         Users: { view: true, create: false, edit: false, delete: false },
         Shops: { view: true, create: false, edit: false, delete: false },
         Rentals: { view: true, create: false, edit: false, delete: false },
@@ -90,9 +93,10 @@ const permissionsConfig: Record<Role['name'], RolePermissions> = {
         Cancellations: { view: true, create: false, edit: false, delete: false },
         Notifications: { view: false, create: false, edit: false, delete: false },
         Banners: { view: false, create: false, edit: false, delete: false },
-        Settings: { view: true, create: false, edit: true, delete: false },
+        'Admin Controls': { view: false, create: false, edit: false, delete: false },
     },
     'Operations Lead': {
+        Dashboard: { view: true, create: false, edit: false, delete: false },
         Users: { view: false, create: false, edit: false, delete: false },
         Shops: { view: true, create: true, edit: true, delete: true },
         Rentals: { view: true, create: false, edit: true, delete: true },
@@ -101,11 +105,44 @@ const permissionsConfig: Record<Role['name'], RolePermissions> = {
         Cancellations: { view: true, create: false, edit: false, delete: false },
         Notifications: { view: true, create: true, edit: false, delete: false },
         Banners: { view: true, create: true, edit: true, delete: true },
-        Settings: { view: false, create: false, edit: false, delete: false },
+        'Admin Controls': { view: false, create: false, edit: false, delete: false },
     },
-    'Analyzer': { Users: { view: true, create: false, edit: false, delete: false }, Shops: { view: true, create: false, edit: false, delete: false }, Rentals: { view: true, create: false, edit: false, delete: false }, Earnings: { view: true, create: false, edit: false, delete: false }, Offers: { view: true, create: false, edit: false, delete: false }, Cancellations: { view: true, create: false, edit: false, delete: false }, Notifications: { view: false, create: false, edit: false, delete: false }, Banners: { view: false, create: false, edit: false, delete: false }, Settings: { view: false, create: false, edit: false, delete: false } },
-    'Project Management': { Users: { view: true, create: false, edit: false, delete: false }, Shops: { view: true, create: false, edit: false, delete: false }, Rentals: { view: true, create: false, edit: false, delete: false }, Earnings: { view: true, create: false, edit: false, delete: false }, Offers: { view: true, create: false, edit: false, delete: false }, Cancellations: { view: true, create: false, edit: false, delete: false }, Notifications: { view: false, create:false, edit: false, delete: false }, Banners: { view: false, create: false, edit: false, delete: false }, Settings: { view: false, create: false, edit: false, delete: false } },
-    'Research Assistant': { Users: { view: true, create: false, edit: false, delete: false }, Shops: { view: true, create: false, edit: false, delete: false }, Rentals: { view: true, create: false, edit: false, delete: false }, Earnings: { view: true, create: false, edit: false, delete: false }, Offers: { view: true, create: false, edit: false, delete: false }, Cancellations: { view: true, create: false, edit: false, delete: false }, Notifications: { view: false, create: false, edit: false, delete: false }, Banners: { view: false, create: false, edit: false, delete: false }, Settings: { view: false, create: false, edit: false, delete: false } },
+    'Analyzer': { 
+        Dashboard: { view: true, create: false, edit: false, delete: false },
+        Users: { view: true, create: false, edit: false, delete: false }, 
+        Shops: { view: true, create: false, edit: false, delete: false }, 
+        Rentals: { view: true, create: false, edit: false, delete: false }, 
+        Earnings: { view: true, create: false, edit: false, delete: false }, 
+        Offers: { view: true, create: false, edit: false, delete: false }, 
+        Cancellations: { view: true, create: false, edit: false, delete: false }, 
+        Notifications: { view: false, create: false, edit: false, delete: false }, 
+        Banners: { view: false, create: false, edit: false, delete: false },
+        'Admin Controls': { view: false, create: false, edit: false, delete: false }
+    },
+    'Project Management': { 
+        Dashboard: { view: true, create: false, edit: false, delete: false },
+        Users: { view: true, create: false, edit: false, delete: false }, 
+        Shops: { view: true, create: false, edit: false, delete: false }, 
+        Rentals: { view: true, create: false, edit: false, delete: false }, 
+        Earnings: { view: true, create: false, edit: false, delete: false }, 
+        Offers: { view: true, create: false, edit: false, delete: false }, 
+        Cancellations: { view: true, create: false, edit: false, delete: false }, 
+        Notifications: { view: false, create:false, edit: false, delete: false }, 
+        Banners: { view: false, create: false, edit: false, delete: false },
+        'Admin Controls': { view: false, create: false, edit: false, delete: false }
+    },
+    'Research Assistant': { 
+        Dashboard: { view: true, create: false, edit: false, delete: false },
+        Users: { view: true, create: false, edit: false, delete: false }, 
+        Shops: { view: true, create: false, edit: false, delete: false }, 
+        Rentals: { view: true, create: false, edit: false, delete: false }, 
+        Earnings: { view: true, create: false, edit: false, delete: false }, 
+        Offers: { view: true, create: false, edit: false, delete: false }, 
+        Cancellations: { view: true, create: false, edit: false, delete: false }, 
+        Notifications: { view: false, create: false, edit: false, delete: false }, 
+        Banners: { view: false, create: false, edit: false, delete: false },
+        'Admin Controls': { view: false, create: false, edit: false, delete: false }
+    },
 };
 
 
@@ -180,7 +217,7 @@ function RoleEditor({ onSave, onBack, roleToEdit }: { onSave: (role: any) => voi
     const [permissions, setPermissions] = useState<RolePermissions>(roleToEdit ? permissionsConfig[roleToEdit.name] : {});
     const { toast } = useToast();
     
-    const permissionModules = ['Users', 'Shops', 'Rentals', 'Earnings', 'Offers', 'Cancellations', 'Notifications', 'Banners', 'Settings'];
+    const permissionModules = ['Dashboard', 'Users', 'Shops', 'Rentals', 'Earnings', 'Offers', 'Cancellations', 'Notifications', 'Banners', 'Admin Controls'];
     const permissionTypes = ['view', 'create', 'edit', 'delete'] as const;
 
     const handlePermissionChange = (module: string, type: 'view' | 'create' | 'edit' | 'delete', checked: boolean) => {
