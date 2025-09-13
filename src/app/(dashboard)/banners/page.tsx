@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -7,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Eye, MousePointerClick, PowerOff, Power } from "lucide-react";
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
@@ -242,26 +242,23 @@ export default function BannersPage() {
                                     {banner.clicks.toLocaleString()} / {banner.impressions.toLocaleString()}
                                 </TableCell>
                                 <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                            <BannerDialog
-                                                trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                                                banner={banner}
-                                                onSave={handleSaveBanner}
-                                            />
-                                            <DropdownMenuItem onClick={() => handleToggleStatus(banner)}>
-                                                {banner.status === 'disabled' ? <><Power className="mr-2 h-4 w-4" /> Enable</> : <><PowerOff className="mr-2 h-4 w-4" /> Disable</>}
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteBanner(banner.id)}>
-                                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <div className="flex items-center gap-2">
+                                        <BannerDialog
+                                            trigger={
+                                                <Button variant="ghost" size="icon">
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                            }
+                                            banner={banner}
+                                            onSave={handleSaveBanner}
+                                        />
+                                        <Button variant="ghost" size="icon" onClick={() => handleToggleStatus(banner)}>
+                                            {banner.status === 'disabled' ? <Power className="h-4 w-4" /> : <PowerOff className="h-4 w-4" />}
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteBanner(banner.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

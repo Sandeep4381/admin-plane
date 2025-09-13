@@ -1,10 +1,10 @@
 
+
 "use client"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Eye, XCircle, RefreshCw, Send } from "lucide-react";
 import { ActionDialog } from './page';
 
@@ -98,46 +98,51 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
                         <Badge variant={statusVariant[rental.status]} className="capitalize">{rental.status}</Badge>
                     </TableCell>
                     <TableCell>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon"><MoreHorizontal /></Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => onViewDetails(rental)}>
-                                    <Eye className="mr-2 h-4 w-4" /> View Details
-                                </DropdownMenuItem>
-                                
-                                {rental.status === 'active' || rental.status === 'upcoming' ? (
-                                    <ActionDialog
-                                        trigger={<><XCircle className="mr-2 h-4 w-4"/> Cancel Booking</>}
-                                        title="Cancel Rental Booking"
-                                        description="Are you sure you want to cancel this booking? This action may trigger a refund if already paid."
-                                        onAction={(reason) => onCancel(rental.id, reason)}
-                                        destructive
-                                    />
-                                ) : null}
+                        <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => onViewDetails(rental)}>
+                                <Eye className="h-4 w-4" />
+                            </Button>
+                            
+                            {(rental.status === 'active' || rental.status === 'upcoming') && (
+                                <ActionDialog
+                                    trigger={
+                                        <Button variant="ghost" size="icon" className="text-destructive">
+                                            <XCircle className="h-4 w-4"/>
+                                        </Button>
+                                    }
+                                    title="Cancel Rental Booking"
+                                    description="Are you sure you want to cancel this booking? This action may trigger a refund if already paid."
+                                    onAction={(reason) => onCancel(rental.id, reason)}
+                                    destructive
+                                />
+                            )}
 
-                                {rental.paymentStatus === 'paid' && rental.status !== 'refunded' && (
-                                     <ActionDialog
-                                        trigger={<><RefreshCw className="mr-2 h-4 w-4"/> Process Refund</>}
-                                        title="Process Refund"
-                                        description="Are you sure you want to process a refund for this rental?"
-                                        onAction={(reason) => onRefund(rental.id, reason)}
-                                    />
-                                )}
-                                
-                                {rental.status === 'active' && (
-                                     <ActionDialog
-                                        trigger={<><Send className="mr-2 h-4 w-4"/> Reassign Vehicle</>}
-                                        title="Reassign Vehicle"
-                                        description="Are you sure you want to reassign the vehicle for this rental?"
-                                        onAction={(reason) => onReassign(rental.id, reason)}
-                                    />
-                                )}
-
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            {rental.paymentStatus === 'paid' && rental.status !== 'refunded' && (
+                                 <ActionDialog
+                                    trigger={
+                                        <Button variant="ghost" size="icon">
+                                            <RefreshCw className="h-4 w-4"/>
+                                        </Button>
+                                    }
+                                    title="Process Refund"
+                                    description="Are you sure you want to process a refund for this rental?"
+                                    onAction={(reason) => onRefund(rental.id, reason)}
+                                />
+                            )}
+                            
+                            {rental.status === 'active' && (
+                                 <ActionDialog
+                                    trigger={
+                                        <Button variant="ghost" size="icon">
+                                            <Send className="h-4 w-4"/>
+                                        </Button>
+                                    }
+                                    title="Reassign Vehicle"
+                                    description="Are you sure you want to reassign the vehicle for this rental?"
+                                    onAction={(reason) => onReassign(rental.id, reason)}
+                                />
+                            )}
+                        </div>
                     </TableCell>
                 </TableRow>
             ))}

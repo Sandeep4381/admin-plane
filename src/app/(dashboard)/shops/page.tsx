@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -66,12 +67,7 @@ function ActionDialog({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <DropdownMenuItem 
-          className={destructive ? "text-destructive" : ""}
-          onSelect={(e) => e.preventDefault()}
-        >
-          {trigger}
-        </DropdownMenuItem>
+        {trigger}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -276,7 +272,7 @@ function ShopsPageContent() {
             <TableHead>Owner</TableHead>
             <TableHead>Verified</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead><span className="sr-only">Actions</span></TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -305,50 +301,53 @@ function ShopsPageContent() {
                     Verify
                   </Button>
                 ) : (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button aria-haspopup="true" size="icon" variant="ghost">
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Toggle menu</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>}
-                      
-                      {shop.status !== 'blocked' && shop.status !== 'restricted' && (
-                         <ActionDialog
-                            trigger={<><KeyRound className="mr-2 h-4 w-4" />Restrict</>}
+                   <div className="flex items-center gap-2">
+                    {shop.status !== 'blocked' && (
+                        <Button variant="ghost" size="icon" onClick={() => handleEditOpen(shop)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    )}
+                     {shop.status !== 'blocked' && shop.status !== 'restricted' && (
+                        <ActionDialog
+                            trigger={
+                                <Button variant="ghost" size="icon">
+                                    <KeyRound className="h-4 w-4" />
+                                </Button>
+                            }
                             title="Are you sure you want to restrict this shop?"
                             description="This action will limit the shop's visibility or functionality. Please provide a reason."
                             onAction={(reason) => handleRestrict(shop.id, reason)}
-                          />
-                      )}
-                      
-                      {shop.status !== 'blocked' ? (
+                        />
+                    )}
+                     {shop.status !== 'blocked' ? (
                          <ActionDialog
-                            trigger={<><Ban className="mr-2 h-4 w-4" />Block</>}
+                            trigger={
+                                <Button variant="ghost" size="icon" className="text-destructive">
+                                    <Ban className="h-4 w-4" />
+                                </Button>
+                            }
                             title="Are you sure you want to block this shop?"
                             description="This action will prevent the shop from appearing in the app. Please provide a reason."
                             onAction={(reason) => handleBlock(shop.id, reason)}
                             destructive
                           />
                       ) : (
-                        <DropdownMenuItem onClick={() => handleUnblock(shop.id)}><CheckCircle className="mr-2 h-4 w-4" />Unblock</DropdownMenuItem>
+                        <Button variant="ghost" size="icon" onClick={() => handleUnblock(shop.id)}>
+                            <CheckCircle className="h-4 w-4" />
+                        </Button>
                       )}
-                      
-                      <DropdownMenuSeparator />
-                      
                       <ActionDialog
-                        trigger={<><Trash2 className="mr-2 h-4 w-4" />Delete</>}
+                        trigger={
+                            <Button variant="ghost" size="icon" className="text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        }
                         title="Are you absolutely sure?"
                         description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
                         onAction={(reason) => handleDelete(shop.id, reason)}
                         destructive={true}
                       />
-
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                   </div>
                 )}
               </TableCell>
             </TableRow>

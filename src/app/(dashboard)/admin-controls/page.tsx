@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft, Eye } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -361,7 +360,7 @@ export default function AdminControlsPage() {
             setAdmins([newAdmin, ...admins]);
             toast({ title: "Admin Invited", description: `An invitation has been sent to ${newAdmin.email}.` });
         }
-    }
+    };
 
     const handleToggleSuspend = (adminId: string, currentStatus: 'active' | 'suspended') => {
         const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
@@ -454,31 +453,26 @@ export default function AdminControlsPage() {
                                             <Badge variant={admin.status === 'active' ? 'default' : 'destructive'}>{admin.status}</Badge>
                                         </TableCell>
                                         <TableCell>
-                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal /></Button></DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuItem onClick={() => setViewingAdmin(admin)}>
-                                                        <Eye className="mr-2 h-4 w-4" /> View
-                                                    </DropdownMenuItem>
-                                                    <AdminDialog 
-                                                        onSave={handleSaveAdmin} 
-                                                        adminToEdit={admin} 
-                                                        trigger={
-                                                            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setEditingAdmin(admin); }}>
-                                                                <Edit className="mr-2 h-4 w-4" /> Edit
-                                                            </DropdownMenuItem>
-                                                        }
-                                                    />
-                                                    <DropdownMenuItem onClick={() => handleToggleSuspend(admin.id, admin.status)}>
-                                                        <UserX className="mr-2 h-4 w-4" /> {admin.status === 'active' ? 'Suspend' : 'Unsuspend'}
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteAdmin(admin.id)}>
-                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            <div className="flex items-center gap-2">
+                                                <Button variant="ghost" size="icon" onClick={() => setViewingAdmin(admin)}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <AdminDialog 
+                                                    onSave={handleSaveAdmin} 
+                                                    adminToEdit={admin} 
+                                                    trigger={
+                                                        <Button variant="ghost" size="icon" onClick={() => setEditingAdmin(admin)}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                    }
+                                                />
+                                                <Button variant="ghost" size="icon" onClick={() => handleToggleSuspend(admin.id, admin.status)}>
+                                                    <UserX className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteAdmin(admin.id)}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}

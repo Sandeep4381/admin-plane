@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useState, useMemo } from 'react';
@@ -6,7 +7,6 @@ import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Percent, Tag, Users, Calendar, PlayCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -162,13 +162,11 @@ function OfferDialog({ trigger, offer, onSave }: { trigger: React.ReactNode, off
     )
 }
 
-function DeleteDialog({ onConfirm }: { onConfirm: () => void }) {
+function DeleteDialog({ onConfirm, children }: { onConfirm: () => void, children: React.ReactNode }) {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                </DropdownMenuItem>
+                {children}
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -325,28 +323,29 @@ function OffersTable({ offers, onSave, onDelete, onActivate }: { offers: Offer[]
                         <TableCell><Badge variant="outline" className="capitalize">{offer.targetAudience}</Badge></TableCell>
                         <TableCell>{offer.usageCount.toLocaleString()}</TableCell>
                         <TableCell>
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    {offer.status !== 'expired' && (
-                                    <OfferDialog
-                                        trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                                        offer={offer}
-                                        onSave={onSave}
-                                    />
-                                    )}
-                                    {offer.status === 'scheduled' && (
-                                        <DropdownMenuItem onClick={() => onActivate(offer.id)}>
-                                            <PlayCircle className="mr-2 h-4 w-4" /> Activate Now
-                                        </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuSeparator />
-                                    <DeleteDialog onConfirm={() => onDelete(offer.id)} />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <div className="flex items-center gap-2">
+                                {offer.status !== 'expired' && (
+                                <OfferDialog
+                                    trigger={
+                                        <Button variant="ghost" size="icon">
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                    }
+                                    offer={offer}
+                                    onSave={onSave}
+                                />
+                                )}
+                                {offer.status === 'scheduled' && (
+                                    <Button variant="ghost" size="icon" onClick={() => onActivate(offer.id)}>
+                                        <PlayCircle className="h-4 w-4" />
+                                    </Button>
+                                )}
+                                <DeleteDialog onConfirm={() => onDelete(offer.id)}>
+                                    <Button variant="ghost" size="icon" className="text-destructive">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </DeleteDialog>
+                            </div>
                         </TableCell>
                     </TableRow>
                 ))}

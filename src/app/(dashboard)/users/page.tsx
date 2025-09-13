@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
@@ -6,10 +7,9 @@ import { PageHeader } from "@/components/common/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle, Search, Eye, CheckCircle, XCircle, Edit, Trash2, Ban } from "lucide-react";
+import { PlusCircle, Search, Eye, CheckCircle, XCircle, Edit, Trash2, Ban } from "lucide-react";
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -71,12 +71,7 @@ function ActionDialog({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <DropdownMenuItem 
-          className={destructive ? "text-destructive" : ""}
-          onSelect={(e) => e.preventDefault()}
-        >
-          {trigger}
-        </DropdownMenuItem>
+        {trigger}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -315,7 +310,7 @@ function UsersPageContent() {
                         <TableHead>Cancellations</TableHead>
                         <TableHead>Lifetime Spend</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                        <TableHead>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -343,60 +338,53 @@ function UsersPageContent() {
                             </Badge>
                             </TableCell>
                             <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                <Button aria-haspopup="true" size="icon" variant="ghost">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Toggle menu</span>
-                                </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => setViewingUser(user)}>
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    View Profile
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEditOpen(user)}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit
-                                </DropdownMenuItem>
-                                
-                                {user.isVerified ? (
-                                    <DropdownMenuItem onClick={() => handleVerificationChange(user.id, false)}>
-                                        <XCircle className="mr-2 h-4 w-4" />
-                                        Unverify
-                                    </DropdownMenuItem>
-                                ) : (
-                                    <DropdownMenuItem onClick={() => handleVerificationChange(user.id, true)}>
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                        Verify
-                                    </DropdownMenuItem>
-                                )}
+                                <div className="flex items-center gap-2">
+                                    <Button variant="ghost" size="icon" onClick={() => setViewingUser(user)}>
+                                        <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleEditOpen(user)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    
+                                    {user.isVerified ? (
+                                        <Button variant="ghost" size="icon" onClick={() => handleVerificationChange(user.id, false)}>
+                                            <XCircle className="h-4 w-4" />
+                                        </Button>
+                                    ) : (
+                                        <Button variant="ghost" size="icon" onClick={() => handleVerificationChange(user.id, true)}>
+                                            <CheckCircle className="h-4 w-4" />
+                                        </Button>
+                                    )}
 
-                                {user.status !== 'blocked' ? (
+                                    {user.status !== 'blocked' ? (
+                                        <ActionDialog
+                                            trigger={
+                                                <Button variant="ghost" size="icon" className="text-destructive">
+                                                    <Ban className="h-4 w-4" />
+                                                </Button>
+                                            }
+                                            title="Are you sure you want to block this user?"
+                                            description="This action will prevent the user from using the app. Please provide a reason."
+                                            onAction={(reason) => handleBlock(user.id, reason)}
+                                            destructive
+                                        />
+                                    ) : (
+                                        <Button variant="ghost" size="icon" onClick={() => handleUnblock(user.id)}>
+                                            <CheckCircle className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                     <ActionDialog
-                                        trigger={<><Ban className="mr-2 h-4 w-4" />Block</>}
-                                        title="Are you sure you want to block this user?"
-                                        description="This action will prevent the user from using the app. Please provide a reason."
-                                        onAction={(reason) => handleBlock(user.id, reason)}
-                                        destructive
+                                        trigger={
+                                            <Button variant="ghost" size="icon" className="text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        }
+                                        title="Are you absolutely sure?"
+                                        description="This action cannot be undone. This will permanently delete the user. Please provide a reason."
+                                        onAction={(reason) => handleDelete(user.id, reason)}
+                                        destructive={true}
                                     />
-                                ) : (
-                                    <DropdownMenuItem onClick={() => handleUnblock(user.id)}>
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                        Unblock
-                                    </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <ActionDialog
-                                    trigger={<><Trash2 className="mr-2 h-4 w-4" />Delete</>}
-                                    title="Are you absolutely sure?"
-                                    description="This action cannot be undone. This will permanently delete the user. Please provide a reason."
-                                    onAction={(reason) => handleDelete(user.id, reason)}
-                                    destructive={true}
-                                />
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                                </div>
                             </TableCell>
                         </TableRow>
                         ))}
