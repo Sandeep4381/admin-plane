@@ -207,6 +207,7 @@ function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVarian
                     <TableHead>Ticket ID</TableHead>
                     <TableHead>Subject</TableHead>
                     <TableHead>User</TableHead>
+                    <TableHead>Shop</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Last Updated</TableHead>
@@ -220,6 +221,7 @@ function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVarian
                         <TableCell className="font-medium">{ticket.id}</TableCell>
                         <TableCell>{ticket.subject}</TableCell>
                         <TableCell>{ticket.user}</TableCell>
+                        <TableCell>{ticket.shop || 'N/A'}</TableCell>
                         <TableCell><Badge variant={statusVariant[ticket.status]}>{ticket.status}</Badge></TableCell>
                         <TableCell><Badge variant={priorityVariant[ticket.priority]}>{ticket.priority}</Badge></TableCell>
                         <TableCell>{ticket.lastReply}</TableCell>
