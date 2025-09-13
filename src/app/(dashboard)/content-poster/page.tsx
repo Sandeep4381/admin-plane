@@ -26,25 +26,27 @@ const initialContent: ContentItem[] = [
     { id: 'CONT003', name: 'Promotional Event "Summer Splash"', images: ['https://picsum.photos/seed/c5/800/450', 'https://picsum.photos/seed/c6/800/450'] },
 ];
 
-function ContentDialog({ onSave, trigger, contentToEdit }: { onSave: (item: Omit<ContentItem, 'id'>) => void, trigger: React.ReactNode, contentToEdit?: ContentItem | null }) {
+function ContentDialog({ onSave, trigger, contentToEdit }: { onSave: (item: Omit<ContentItem, 'id'>, idToSave: string) => void, trigger: React.ReactNode, contentToEdit?: ContentItem | null }) {
     const [open, setOpen] = useState(false);
+    const [id, setId] = useState(contentToEdit?.id || '');
     const [name, setName] = useState(contentToEdit?.name || '');
     const [images, setImages] = useState<string[]>(contentToEdit?.images || []);
     const { toast } = useToast();
 
     React.useEffect(() => {
         if (open) {
+            setId(contentToEdit?.id || '');
             setName(contentToEdit?.name || '');
             setImages(contentToEdit?.images || []);
         }
     }, [open, contentToEdit]);
 
     const handleSave = () => {
-        if (!name) {
-            toast({ title: "Validation Error", description: "Content name is required.", variant: "destructive" });
+        if (!name || !id) {
+            toast({ title: "Validation Error", description: "Content ID and Name are required.", variant: "destructive" });
             return;
         }
-        onSave({ name, images });
+        onSave({ name, images }, id);
         setOpen(false);
     };
     
@@ -65,6 +67,10 @@ function ContentDialog({ onSave, trigger, contentToEdit }: { onSave: (item: Omit
                     <DialogDescription>{contentToEdit ? 'Update the details for this content.' : 'Add a new content item with multiple images.'}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                    <div className="space-y-2">
+                        <Label htmlFor="id">Content ID</Label>
+                        <Input id="id" value={id} onChange={(e) => setId(e.target.value)} disabled={!!contentToEdit} />
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="name">Content Name</Label>
                         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
@@ -145,13 +151,20 @@ export default function ContentPosterPage() {
     const [viewingContent, setViewingContent] = useState<ContentItem | null>(null);
     const { toast } = useToast();
 
-    const handleSaveContent = (item: Omit<ContentItem, 'id'>, id?: string) => {
-        if (id) {
-            setContentList(contentList.map(c => c.id === id ? { ...c, ...item } : c));
+    const handleSaveContent = (item: Omit<ContentItem, 'id'>, idToSave: string) => {
+        const isEditing = contentList.some(c => c.id === idToSave);
+
+        if (isEditing) {
+            setContentList(contentList.map(c => c.id === idToSave ? { ...item, id: idToSave } : c));
             toast({ title: "Content Updated", description: "The content item has been successfully updated." });
         } else {
+            // Check if ID already exists
+            if (contentList.some(c => c.id === idToSave)) {
+                toast({ title: "Error", description: "Content ID already exists. Please use a unique ID.", variant: "destructive" });
+                return;
+            }
             const newContent: ContentItem = {
-                id: `CONT${Date.now()}`,
+                id: idToSave,
                 ...item,
             };
             setContentList([newContent, ...contentList]);
@@ -168,7 +181,7 @@ export default function ContentPosterPage() {
         <>
             <PageHeader title="Content/Poster Management">
                  <ContentDialog
-                    onSave={(item) => handleSaveContent(item)}
+                    onSave={(item, id) => handleSaveContent(item, id)}
                     trigger={
                         <Button>
                             <PlusCircle className="mr-2 h-4 w-4" />
@@ -206,7 +219,7 @@ export default function ContentPosterPage() {
                                                 <Eye className="h-4 w-4" />
                                             </Button>
                                             <ContentDialog
-                                                onSave={(updatedItem) => handleSaveContent(updatedItem, item.id)}
+                                                onSave={(updatedItem, id) => handleSaveContent(updatedItem, id)}
                                                 contentToEdit={item}
                                                 trigger={
                                                     <Button variant="ghost" size="icon">
