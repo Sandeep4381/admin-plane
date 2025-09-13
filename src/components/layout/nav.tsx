@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Car, LayoutDashboard, Store, Users2, TicketPercent, FileX2, Wallet, Bell, GalleryHorizontal, ShieldCheck, User, Image as ImageIcon } from "lucide-react"
+import { Car, LayoutDashboard, Store, Users2, TicketPercent, FileX2, Wallet, Bell, GalleryHorizontal, ShieldCheck, User, Image as ImageIcon, LifeBuoy } from "lucide-react"
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/banners", label: "Banners", icon: GalleryHorizontal },
   { href: "/content-poster", label: "Content/Poster", icon: ImageIcon },
+  { href: "/support", label: "Support/Tickets", icon: LifeBuoy },
   { href: "/admin-controls", label: "Admin Controls", icon: ShieldCheck },
   { href: "/profile", label: "Profile", icon: User },
 ];
