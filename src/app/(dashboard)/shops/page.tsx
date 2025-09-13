@@ -83,7 +83,6 @@ function ActionDialog({
   };
 
   return (
-    <>
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         {trigger}
@@ -105,7 +104,6 @@ function ActionDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    </>
   );
 }
 
@@ -303,9 +301,9 @@ function ShopsPageContent() {
             <TableHead>Shop Name</TableHead>
             <TableHead>City</TableHead>
             <TableHead>Owner</TableHead>
-            <TableHead>Verified</TableHead>
+            <TableHead>Shop Type</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -315,9 +313,7 @@ function ShopsPageContent() {
               <TableCell className="font-medium">{shop.name}</TableCell>
               <TableCell>{shop.city}</TableCell>
               <TableCell>{shop.owner}</TableCell>
-              <TableCell>
-                <Checkbox checked={shop.verified} aria-label="Verified" disabled />
-              </TableCell>
+              <TableCell className="capitalize">{shop.shopType}</TableCell>
               <TableCell>
                 <Badge 
                   variant={shop.status === 'pending' ? 'secondary' : 'default'}
@@ -328,7 +324,7 @@ function ShopsPageContent() {
                 </Badge>
               </TableCell>
               <TableCell>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center justify-center gap-2">
                     <Button variant="ghost" size="icon" onClick={() => setViewingShop(shop)}>
                         <Eye className="h-4 w-4" />
                     </Button>
