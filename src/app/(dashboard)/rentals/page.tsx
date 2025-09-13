@@ -13,6 +13,7 @@ import { RentalDetailsDrawer } from './rental-details-drawer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
@@ -54,7 +55,12 @@ export function ActionDialog({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        {trigger}
+        <DropdownMenuItem 
+          className={destructive ? "text-destructive" : ""}
+          onSelect={(e) => e.preventDefault()}
+        >
+          {trigger}
+        </DropdownMenuItem>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

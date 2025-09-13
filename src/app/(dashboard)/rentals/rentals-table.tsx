@@ -110,7 +110,7 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
                                 
                                 {rental.status === 'active' || rental.status === 'upcoming' ? (
                                     <ActionDialog
-                                        trigger={<DropdownMenuItem onSelect={e => e.preventDefault()}><XCircle className="mr-2 h-4 w-4"/> Cancel Booking</DropdownMenuItem>}
+                                        trigger={<><XCircle className="mr-2 h-4 w-4"/> Cancel Booking</>}
                                         title="Cancel Rental Booking"
                                         description="Are you sure you want to cancel this booking? This action may trigger a refund if already paid."
                                         onAction={(reason) => onCancel(rental.id, reason)}
@@ -120,7 +120,7 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
 
                                 {rental.paymentStatus === 'paid' && rental.status !== 'refunded' && (
                                      <ActionDialog
-                                        trigger={<DropdownMenuItem onSelect={e => e.preventDefault()}><RefreshCw className="mr-2 h-4 w-4"/> Process Refund</DropdownMenuItem>}
+                                        trigger={<><RefreshCw className="mr-2 h-4 w-4"/> Process Refund</>}
                                         title="Process Refund"
                                         description="Are you sure you want to process a refund for this rental?"
                                         onAction={(reason) => onRefund(rental.id, reason)}
@@ -129,7 +129,7 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
                                 
                                 {rental.status === 'active' && (
                                      <ActionDialog
-                                        trigger={<DropdownMenuItem onSelect={e => e.preventDefault()}><Send className="mr-2 h-4 w-4"/> Reassign Vehicle</DropdownMenuItem>}
+                                        trigger={<><Send className="mr-2 h-4 w-4"/> Reassign Vehicle</>}
                                         title="Reassign Vehicle"
                                         description="Are you sure you want to reassign the vehicle for this rental?"
                                         onAction={(reason) => onReassign(rental.id, reason)}
@@ -145,5 +145,3 @@ export function RentalsTable({ rentals, onViewDetails, onCancel, onRefund, onRea
     </Table>
   );
 }
-
-    

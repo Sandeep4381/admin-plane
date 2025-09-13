@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle, Search, Eye, CheckCircle, XCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, Eye, CheckCircle, XCircle, Edit, Trash2, Ban } from "lucide-react";
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -47,13 +47,13 @@ const initialUsersData: User[] = [
 
 
 function ActionDialog({
-  triggerText,
+  trigger,
   title,
   description,
   onAction,
   destructive = false
 }: {
-  triggerText: React.ReactNode,
+  trigger: React.ReactNode,
   title: string,
   description: string,
   onAction: (reason: string) => void,
@@ -75,7 +75,7 @@ function ActionDialog({
           className={destructive ? "text-destructive" : ""}
           onSelect={(e) => e.preventDefault()}
         >
-          {triggerText}
+          {trigger}
         </DropdownMenuItem>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -148,6 +148,7 @@ function UsersPageContent() {
     toast({
       title: "User Deleted",
       description: `Notification sent to user with reason: ${reason}`,
+      variant: "destructive"
     });
   };
 
@@ -355,7 +356,10 @@ function UsersPageContent() {
                                     <Eye className="mr-2 h-4 w-4" />
                                     View Profile
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEditOpen(user)}>Edit</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditOpen(user)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
                                 
                                 {user.isVerified ? (
                                     <DropdownMenuItem onClick={() => handleVerificationChange(user.id, false)}>
@@ -371,18 +375,21 @@ function UsersPageContent() {
 
                                 {user.status !== 'blocked' ? (
                                     <ActionDialog
-                                        triggerText="Block"
+                                        trigger={<><Ban className="mr-2 h-4 w-4" />Block</>}
                                         title="Are you sure you want to block this user?"
                                         description="This action will prevent the user from using the app. Please provide a reason."
                                         onAction={(reason) => handleBlock(user.id, reason)}
                                         destructive
                                     />
                                 ) : (
-                                    <DropdownMenuItem onClick={() => handleUnblock(user.id)}>Unblock</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleUnblock(user.id)}>
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Unblock
+                                    </DropdownMenuItem>
                                 )}
                                 <DropdownMenuSeparator />
                                 <ActionDialog
-                                    triggerText="Delete"
+                                    trigger={<><Trash2 className="mr-2 h-4 w-4" />Delete</>}
                                     title="Are you absolutely sure?"
                                     description="This action cannot be undone. This will permanently delete the user. Please provide a reason."
                                     onAction={(reason) => handleDelete(user.id, reason)}

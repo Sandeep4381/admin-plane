@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Eye, MousePointerClick } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Eye, MousePointerClick, PowerOff, Power } from "lucide-react";
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -254,7 +254,7 @@ export default function BannersPage() {
                                                 onSave={handleSaveBanner}
                                             />
                                             <DropdownMenuItem onClick={() => handleToggleStatus(banner)}>
-                                                {banner.status === 'disabled' ? 'Enable' : 'Disable'}
+                                                {banner.status === 'disabled' ? <><Power className="mr-2 h-4 w-4" /> Enable</> : <><PowerOff className="mr-2 h-4 w-4" /> Disable</>}
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteBanner(banner.id)}>

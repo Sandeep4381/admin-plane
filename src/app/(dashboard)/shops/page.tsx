@@ -5,11 +5,12 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle, Search, CheckCircle, XCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound } from "lucide-react";
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -41,13 +42,13 @@ const initialShopsData: Shop[] = [
 ];
 
 function ActionDialog({
-  triggerText,
+  trigger,
   title,
   description,
   onAction,
   destructive = false
 }: {
-  triggerText: string,
+  trigger: React.ReactNode,
   title: string,
   description: string,
   onAction: (reason: string) => void,
@@ -69,7 +70,7 @@ function ActionDialog({
           className={destructive ? "text-destructive" : ""}
           onSelect={(e) => e.preventDefault()}
         >
-          {triggerText}
+          {trigger}
         </DropdownMenuItem>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -84,7 +85,7 @@ function ActionDialog({
             onClick={handleAction} 
             className={destructive ? "bg-destructive hover:bg-destructive/90" : ""}
           >
-            {triggerText}
+            Confirm
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -99,7 +100,6 @@ function ShopsPageContent() {
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
   
-  // Local state for the search input
   const [currentSearch, setCurrentSearch] = useState(searchParams.get('search') || "");
 
   const [shops, setShops] = useState(initialShopsData);
@@ -134,12 +134,10 @@ function ShopsPageContent() {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value;
     setCurrentSearch(value);
-    // Update URL query param in real-time or with debounce
     router.push(`${pathname}?${createQueryString('search', value)}`, { scroll: false });
   };
   
   useEffect(() => {
-    // Ensure local state is in sync with URL on mount/navigation
     setCurrentSearch(searchParams.get('search') || "");
   }, [searchParams]);
 
@@ -148,6 +146,7 @@ function ShopsPageContent() {
     toast({
       title: "Shop Deleted",
       description: `Notification sent to shop owner with reason: ${reason}`,
+      variant: "destructive"
     })
   };
 
@@ -290,7 +289,15 @@ function ShopsPageContent() {
               <TableCell>
                 <Checkbox checked={shop.verified} aria-label="Verified" disabled />
               </TableCell>
-              <TableCell className="capitalize">{shop.status}</TableCell>
+              <TableCell>
+                <Badge 
+                  variant={shop.status === 'pending' ? 'secondary' : 'default'}
+                  className={shop.status === 'pending' ? 'cursor-pointer' : ''}
+                  onClick={() => shop.status === 'pending' && handleVerifyOpen(shop)}
+                >
+                  {shop.status}
+                </Badge>
+              </TableCell>
               <TableCell>
                 {shop.status === 'pending' ? (
                   <Button variant="outline" size="sm" onClick={() => handleVerifyOpen(shop)}>
@@ -307,11 +314,11 @@ function ShopsPageContent() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}>Edit</DropdownMenuItem>}
+                      {shop.status !== 'blocked' && <DropdownMenuItem onClick={() => handleEditOpen(shop)}><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>}
                       
                       {shop.status !== 'blocked' && shop.status !== 'restricted' && (
                          <ActionDialog
-                            triggerText="Restrict"
+                            trigger={<><KeyRound className="mr-2 h-4 w-4" />Restrict</>}
                             title="Are you sure you want to restrict this shop?"
                             description="This action will limit the shop's visibility or functionality. Please provide a reason."
                             onAction={(reason) => handleRestrict(shop.id, reason)}
@@ -320,20 +327,20 @@ function ShopsPageContent() {
                       
                       {shop.status !== 'blocked' ? (
                          <ActionDialog
-                            triggerText="Block"
+                            trigger={<><Ban className="mr-2 h-4 w-4" />Block</>}
                             title="Are you sure you want to block this shop?"
                             description="This action will prevent the shop from appearing in the app. Please provide a reason."
                             onAction={(reason) => handleBlock(shop.id, reason)}
                             destructive
                           />
                       ) : (
-                        <DropdownMenuItem onClick={() => handleUnblock(shop.id)}>Unblock</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUnblock(shop.id)}><CheckCircle className="mr-2 h-4 w-4" />Unblock</DropdownMenuItem>
                       )}
                       
                       <DropdownMenuSeparator />
                       
                       <ActionDialog
-                        triggerText="Delete"
+                        trigger={<><Trash2 className="mr-2 h-4 w-4" />Delete</>}
                         title="Are you absolutely sure?"
                         description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
                         onAction={(reason) => handleDelete(shop.id, reason)}
