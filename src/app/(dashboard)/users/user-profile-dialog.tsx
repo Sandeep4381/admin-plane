@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "./page";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, History, Mail, Send, Wallet, XCircle } from "lucide-react";
+import { AlertCircle, History, Mail, Send, Wallet, XCircle, FileText } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 
@@ -136,6 +136,7 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
             <div className="flex gap-2">
                 <Button size="sm"><Send className="mr-2 h-4 w-4"/>Send Push</Button>
                 <Button size="sm" variant="outline"><Mail className="mr-2 h-4 w-4"/>Send Email</Button>
+                <Button size="sm" variant="outline"><FileText className="mr-2 h-4 w-4"/>View Document</Button>
             </div>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
           </div>
@@ -144,3 +145,4 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
     </Dialog>
   );
 }
+
