@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { UserProfileDrawer } from './user-profile-drawer';
+import { UserProfileDialog } from './user-profile-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
 
@@ -246,19 +246,19 @@ function UsersPageContent() {
     <>
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <PageHeader title="Users Management">
-           <div className="flex items-center gap-2">
-            <div className="relative">
+           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+            <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                     type="search"
                     placeholder="Search by name, email, phone..."
-                    className="pl-8 w-64"
+                    className="pl-8 w-full sm:w-64"
                     value={currentSearch}
                     onChange={handleSearchChange}
                 />
             </div>
             <DialogTrigger asChild>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add User
                 </Button>
@@ -294,7 +294,7 @@ function UsersPageContent() {
       </Dialog>
 
       <Tabs value={tab} onValueChange={handleTabChange}>
-        <TabsList>
+        <TabsList className="overflow-x-auto whitespace-nowrap h-auto justify-start">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="verified">Verified</TabsTrigger>
@@ -304,6 +304,7 @@ function UsersPageContent() {
         <Card className="mt-4">
           <CardContent className="p-0">
              {filteredUsers.length > 0 ? (
+                 <div className="overflow-x-auto">
                  <Table>
                     <TableHeader>
                         <TableRow>
@@ -394,6 +395,7 @@ function UsersPageContent() {
                         ))}
                     </TableBody>
                 </Table>
+                </div>
             ) : (
               <div className="p-6 text-center text-muted-foreground">No users found matching the criteria.</div>
             )}
@@ -431,7 +433,7 @@ function UsersPageContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <UserProfileDrawer user={viewingUser} onOpenChange={(open) => !open && setViewingUser(null)} />
+      <UserProfileDialog user={viewingUser} onOpenChange={(open) => !open && setViewingUser(null)} />
     </>
   );
 }
@@ -444,5 +446,3 @@ export default function UsersPage() {
         </React.Suspense>
     )
 }
-
-    

@@ -1,4 +1,5 @@
 
+"use client"
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "./page";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, History, MessageSquare, Send, Mail, Smartphone, Wallet, XCircle, Car } from "lucide-react";
+import { AlertCircle, History, Mail, Send, Wallet, XCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 
