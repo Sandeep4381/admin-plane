@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from '@/components/ui/input';
 import { Search, TrendingUp, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { RentalsTable, initialRentalsData, Rental } from './rentals-table';
-import { RentalDetailsDrawer } from './rental-details-drawer';
+import { RentalDetailsDialog } from './rental-details-dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -230,7 +230,7 @@ function RentalsPageContent() {
           </Card>
         </Tabs>
       </div>
-      <RentalDetailsDrawer 
+      <RentalDetailsDialog 
         rental={viewingRental}
         onOpenChange={(open) => !open && setViewingRental(null)}
         onUpdateRental={handleUpdateRental}

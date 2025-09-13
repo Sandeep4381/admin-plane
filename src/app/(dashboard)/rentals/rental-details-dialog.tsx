@@ -1,5 +1,4 @@
-
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import type { Rental } from './rentals-table';
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -7,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 
-type RentalDetailsDrawerProps = {
+type RentalDetailsDialogProps = {
   rental: Rental | null;
   onOpenChange: (open: boolean) => void;
   onUpdateRental: (rental: Rental) => void;
 };
 
-export function RentalDetailsDrawer({ rental, onOpenChange, onUpdateRental }: RentalDetailsDrawerProps) {
+export function RentalDetailsDialog({ rental, onOpenChange, onUpdateRental }: RentalDetailsDialogProps) {
   if (!rental) return null;
   
   const [adminNotes, setAdminNotes] = useState("");
@@ -33,14 +32,14 @@ export function RentalDetailsDrawer({ rental, onOpenChange, onUpdateRental }: Re
   };
 
   return (
-    <Sheet open={!!rental} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[500px] sm:w-[640px] p-0 flex flex-col">
-        <SheetHeader className="p-6">
-          <SheetTitle className="text-2xl">Rental Details: {rental.id}</SheetTitle>
-          <SheetDescription>
+    <Dialog open={!!rental} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[500px] sm:w-[640px] p-0 flex flex-col">
+        <DialogHeader className="p-6">
+          <DialogTitle className="text-2xl">Rental Details: {rental.id}</DialogTitle>
+          <DialogDescription>
             {rental.userName} renting {rental.vehicleModel} from {rental.shopName}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
         <Separator />
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -104,13 +103,11 @@ export function RentalDetailsDrawer({ rental, onOpenChange, onUpdateRental }: Re
             </div>
 
         </div>
-        <SheetFooter className="p-6 border-t">
+        <DialogFooter className="p-6 border-t">
           <Button onClick={() => onOpenChange(false)}>Close</Button>
           <Button>Save Notes</Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-    
