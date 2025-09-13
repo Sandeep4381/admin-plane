@@ -33,7 +33,7 @@ export function RentalDetailsDialog({ rental, onOpenChange, onUpdateRental }: Re
 
   return (
     <Dialog open={!!rental} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[500px] sm:w-[640px] p-0 flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader className="p-6">
           <DialogTitle className="text-2xl">Rental Details: {rental.id}</DialogTitle>
           <DialogDescription>
