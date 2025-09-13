@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound, Eye } from "lucide-react";
+import { PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound, Eye, Wallet, TrendingUp, DollarSign } from "lucide-react";
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
 
 type Shop = {
   id: string;
@@ -29,16 +30,34 @@ type Shop = {
   status: 'verified' | 'pending' | 'blocked' | 'restricted' | 'rejected';
   documentUrl?: string;
   shopImageUrl?: string;
+  platformEarnings: number;
+  totalBookingAmount: number;
+  shopProfit: number;
+  shopType: 'vendor' | 'individual';
 };
 
 const initialShopsData: Shop[] = [
-  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/1/400/300', shopImageUrl: 'https://picsum.photos/seed/2/400/300' },
-  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/3/400/300', shopImageUrl: 'https://picsum.photos/seed/4/400/300' },
-  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/5/400/300', shopImageUrl: 'https://picsum.photos/seed/6/400/300' },
-  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/7/400/300', shopImageUrl: 'https://picsum.photos/seed/8/400/300' },
-  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/9/400/300', shopImageUrl: 'https://picsum.photos/seed/10/400/300' },
-  { id: 'S006', name: 'Blocked Wheels', city: 'Miami', owner: 'Frank White', verified: false, status: 'blocked', documentUrl: 'https://picsum.photos/seed/11/400/300', shopImageUrl: 'https://picsum.photos/seed/12/400/300' },
-  { id: 'S007', name: 'Rejected Rides', city: 'Seattle', owner: 'Grace Hall', verified: false, status: 'rejected', documentUrl: 'https://picsum.photos/seed/13/400/300', shopImageUrl: 'https://picsum.photos/seed/14/400/300' },
+  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/1/400/300', shopImageUrl: 'https://picsum.photos/seed/2/400/300', platformEarnings: 12000, totalBookingAmount: 120000, shopProfit: 108000, shopType: 'vendor' },
+  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/3/400/300', shopImageUrl: 'https://picsum.photos/seed/4/400/300', platformEarnings: 8000, totalBookingAmount: 80000, shopProfit: 72000, shopType: 'individual' },
+  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/5/400/300', shopImageUrl: 'https://picsum.photos/seed/6/400/300', platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'vendor' },
+  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/7/400/300', shopImageUrl: 'https://picsum.photos/seed/8/400/300', platformEarnings: 15000, totalBookingAmount: 150000, shopProfit: 135000, shopType: 'vendor' },
+  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/9/400/300', shopImageUrl: 'https://picsum.photos/seed/10/400/300', platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'individual' },
+  { id: 'S006', name: 'Blocked Wheels', city: 'Miami', owner: 'Frank White', verified: false, status: 'blocked', documentUrl: 'https://picsum.photos/seed/11/400/300', shopImageUrl: 'https://picsum.photos/seed/12/400/300', platformEarnings: 500, totalBookingAmount: 5000, shopProfit: 4500, shopType: 'vendor' },
+  { id: 'S007', name: 'Rejected Rides', city: 'Seattle', owner: 'Grace Hall', verified: false, status: 'rejected', documentUrl: 'https://picsum.photos/seed/13/400/300', shopImageUrl: 'https://picsum.photos/seed/14/400/300', platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'individual' },
+];
+
+const topBookingsData = [
+    { id: 'R234', vehicle: 'Toyota Camry', user: 'Alice', date: '2024-07-15', amount: 300 },
+    { id: 'R211', vehicle: 'Honda Activa', user: 'Bob', date: '2024-07-10', amount: 50 },
+    { id: 'R198', vehicle: 'Toyota Camry', user: 'Charlie', date: '2024-06-28', amount: 300 },
+    { id: 'R180', vehicle: 'Ford Mustang', user: 'Diana', date: '2024-06-20', amount: 700 },
+    { id: 'R175', vehicle: 'Vespa SXL 150', user: 'Ethan', date: '2024-06-12', amount: 90 },
+];
+
+const driverListData = [
+    { id: 'D01', name: 'Mark Evans', status: 'Active', phone: '111-222-3333' },
+    { id: 'D02', name: 'Steve Rogers', status: 'Inactive', phone: '444-555-6666' },
+    { id: 'D03', name: 'Tony Stark', status: 'Active', phone: '777-888-9999' },
 ];
 
 function ActionDialog({
@@ -64,6 +83,7 @@ function ActionDialog({
   };
 
   return (
+    <>
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         {trigger}
@@ -85,9 +105,21 @@ function ActionDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </>
   );
 }
 
+function StatCard({ label, value, icon: Icon }: { label: string, value: string | number, icon: React.ElementType }) {
+    return (
+        <div className="flex items-center gap-4 rounded-lg border p-3">
+            <Icon className="h-6 w-6 text-muted-foreground" />
+            <div>
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className="text-lg font-semibold">{value}</p>
+            </div>
+        </div>
+    )
+}
 
 function ShopsPageContent() {
   const router = useRouter();
@@ -230,7 +262,8 @@ function ShopsPageContent() {
       id: `S${Date.now().toString(36)}${Math.random().toString(36).substring(2, 5)}`.toUpperCase(),
       ...newShop,
       verified: false,
-      status: 'pending'
+      status: 'pending',
+      platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'vendor'
     };
     setShops([...shops, newShopData]);
     setIsAddDialogOpen(false);
@@ -543,20 +576,89 @@ function ShopsPageContent() {
       </AlertDialog>
 
         <Dialog open={!!viewingShop} onOpenChange={(open) => !open && setViewingShop(null)}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Shop Profile: {viewingShop?.name}</DialogTitle>
                     <DialogDescription>
-                        Read-only view of shop details.
+                        Read-only view of shop details and performance.
                     </DialogDescription>
                 </DialogHeader>
                 {viewingShop && (
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <p><strong>Owner:</strong> {viewingShop.owner}</p>
-                            <p><strong>City:</strong> {viewingShop.city}</p>
-                            <p><strong>Status:</strong> <Badge variant={viewingShop.status === 'pending' ? 'secondary' : 'default'}>{viewingShop.status}</Badge></p>
-                            <p><strong>Verified:</strong> {viewingShop.verified ? 'Yes' : 'No'}</p>
+                    <div className="flex-1 overflow-y-auto pr-2 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                           <StatCard label="Platform Earnings" value={`₹${viewingShop.platformEarnings.toLocaleString()}`} icon={Wallet} />
+                           <StatCard label="Total Bookings" value={`₹${viewingShop.totalBookingAmount.toLocaleString()}`} icon={TrendingUp} />
+                           <StatCard label="Shop Profit" value={`₹${viewingShop.shopProfit.toLocaleString()}`} icon={DollarSign} />
+                        </div>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Owner:</span>
+                                <span>{viewingShop.owner}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">City:</span>
+                                <span>{viewingShop.city}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Status:</span>
+                                <span><Badge variant={viewingShop.status === 'pending' ? 'secondary' : 'default'} className="capitalize">{viewingShop.status}</Badge></span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Shop Type:</span>
+                                <span className="capitalize">{viewingShop.shopType}</span>
+                            </div>
+                        </div>
+                        <Separator />
+                        <div>
+                           <h4 className="font-semibold text-lg mb-2">Top 5 Bookings</h4>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Booking ID</TableHead>
+                                        <TableHead>User</TableHead>
+                                        <TableHead>Date</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {topBookingsData.map((booking) => (
+                                        <TableRow key={booking.id}>
+                                            <TableCell>{booking.id}</TableCell>
+                                            <TableCell>{booking.user}</TableCell>
+                                            <TableCell>{booking.date}</TableCell>
+                                            <TableCell>₹{booking.amount}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <Separator />
+                        <div>
+                           <h4 className="font-semibold text-lg mb-2">Driver List</h4>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Driver ID</TableHead>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Phone</TableHead>
+                                        <TableHead>Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {driverListData.map((driver) => (
+                                        <TableRow key={driver.id}>
+                                            <TableCell>{driver.id}</TableCell>
+                                            <TableCell>{driver.name}</TableCell>
+                                            <TableCell>{driver.phone}</TableCell>
+                                            <TableCell>
+                                                <Badge variant={driver.status === 'Active' ? 'default' : 'secondary'}>
+                                                    {driver.status}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </div>
                          <div className="space-y-2">
                             <Label>Images</Label>
