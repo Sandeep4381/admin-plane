@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Search, Reply, Send } from "lucide-react";
+import { Eye, Search, Reply, Send, MoreHorizontal, UserCheck, CheckCircle, Circle } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
 
 
 type TicketStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';
@@ -86,6 +88,8 @@ const initialTickets: Ticket[] = [
   },
 ];
 
+const teamMembers = ['Priya Singh', 'Rohan Sharma', 'Amit Patel', 'Sunita Rao', 'Rahul Kumar'];
+
 
 function ViewTicketDialog({ ticket, onOpenChange }: { ticket: Ticket | null; onOpenChange: (open: boolean) => void }) {
     if (!ticket) return null;
@@ -132,8 +136,9 @@ function ViewTicketDialog({ ticket, onOpenChange }: { ticket: Ticket | null; onO
 }
 
 export default function SupportPage() {
-    const [tickets] = useState(initialTickets);
+    const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
     const [viewingTicket, setViewingTicket] = useState<Ticket | null>(null);
+    const { toast } = useToast();
     
     const priorityVariant: Record<TicketPriority, 'destructive' | 'default' | 'secondary'> = {
         High: 'destructive',
@@ -148,6 +153,17 @@ export default function SupportPage() {
         Closed: 'outline'
     };
     
+    const handleAssignTicket = (ticketId: string, agent: string) => {
+        setTickets(currentTickets => currentTickets.map(t => t.id === ticketId ? { ...t, assignedTo: agent } : t));
+        toast({ title: 'Ticket Assigned', description: `Ticket ${ticketId} has been assigned to ${agent}.` });
+    };
+
+    const handleCloseTicket = (ticketId: string) => {
+        setTickets(currentTickets => currentTickets.map(t => t.id === ticketId ? { ...t, status: 'Closed' } : t));
+        toast({ title: 'Ticket Closed', description: `Ticket ${ticketId} has been closed.` });
+    };
+
+
     const filteredTickets = (status: TicketStatus | 'All') => {
         if (status === 'All') return tickets;
         return tickets.filter(ticket => ticket.status === status);
@@ -166,6 +182,7 @@ export default function SupportPage() {
                     <TabsTrigger value="open">Open</TabsTrigger>
                     <TabsTrigger value="in_progress">In Progress</TabsTrigger>
                     <TabsTrigger value="resolved">Resolved</TabsTrigger>
+                    <TabsTrigger value="closed">Closed</TabsTrigger>
                 </TabsList>
                 <Card className="mt-4">
                     <CardHeader>
@@ -174,13 +191,16 @@ export default function SupportPage() {
                     </CardHeader>
                     <CardContent>
                         <TabsContent value="open">
-                            <TicketsTable tickets={filteredTickets('Open')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} />
+                            <TicketsTable tickets={filteredTickets('Open')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
                         </TabsContent>
                          <TabsContent value="in_progress">
-                            <TicketsTable tickets={filteredTickets('In Progress')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} />
+                            <TicketsTable tickets={filteredTickets('In Progress')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
                         </TabsContent>
                          <TabsContent value="resolved">
-                            <TicketsTable tickets={filteredTickets('Resolved')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} />
+                            <TicketsTable tickets={filteredTickets('Resolved')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
+                        </TabsContent>
+                         <TabsContent value="closed">
+                            <TicketsTable tickets={filteredTickets('Closed')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
                         </TabsContent>
                     </CardContent>
                 </Card>
@@ -194,11 +214,13 @@ export default function SupportPage() {
 }
 
 
-function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVariant }: { 
+function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVariant, onAssign, onClose }: { 
     tickets: Ticket[],
     setViewingTicket: (ticket: Ticket) => void,
     priorityVariant: Record<TicketPriority, 'destructive' | 'default' | 'secondary'>,
     statusVariant: Record<TicketStatus, 'destructive' | 'default' | 'secondary' | 'outline'>
+    onAssign: (ticketId: string, agent: string) => void;
+    onClose: (ticketId: string) => void;
 }) {
     return (
         <Table>
@@ -212,7 +234,7 @@ function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVarian
                     <TableHead>Priority</TableHead>
                     <TableHead>Last Updated</TableHead>
                     <TableHead>Assigned To</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -226,10 +248,44 @@ function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVarian
                         <TableCell><Badge variant={priorityVariant[ticket.priority]}>{ticket.priority}</Badge></TableCell>
                         <TableCell>{ticket.lastReply}</TableCell>
                         <TableCell>{ticket.assignedTo}</TableCell>
-                        <TableCell>
-                            <Button variant="ghost" size="icon" onClick={() => setViewingTicket(ticket)}>
-                                <Eye className="h-4 w-4" />
-                            </Button>
+                        <TableCell className="text-center">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuItem onSelect={() => setViewingTicket(ticket)}>
+                                        <Eye className="mr-2 h-4 w-4" />
+                                        View Ticket
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger>
+                                            <UserCheck className="mr-2 h-4 w-4" />
+                                            Assign Agent
+                                        </DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent>
+                                            {teamMembers.map(agent => (
+                                                <DropdownMenuItem key={agent} onSelect={() => onAssign(ticket.id, agent)}>
+                                                    {agent === ticket.assignedTo ? (
+                                                        <Circle className="mr-2 h-4 w-4 fill-foreground" />
+                                                    ) : (
+                                                        <Circle className="mr-2 h-4 w-4" />
+                                                    )}
+                                                    {agent}
+                                                </DropdownMenuItem>
+                                            ))}
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onSelect={() => onClose(ticket.id)}>
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Close Ticket
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </TableCell>
                     </TableRow>
                 ))}
