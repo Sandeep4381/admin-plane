@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Edit, Trash2, Eye, X } from "lucide-react";
+import { Pagination } from '@/components/common/pagination';
 
 type ContentItem = {
     id: string;
@@ -24,6 +26,14 @@ const initialContent: ContentItem[] = [
     { id: 'CONT001', name: 'Homepage Welcome Banners', images: ['https://picsum.photos/seed/c1/800/450', 'https://picsum.photos/seed/c2/800/450', 'https://picsum.photos/seed/c3/800/450'] },
     { id: 'CONT002', name: 'New User Guide', images: ['https://picsum.photos/seed/c4/800/450'] },
     { id: 'CONT003', name: 'Promotional Event "Summer Splash"', images: ['https://picsum.photos/seed/c5/800/450', 'https://picsum.photos/seed/c6/800/450'] },
+    { id: 'CONT004', name: 'About Us Section', images: ['https://picsum.photos/seed/c7/800/450'] },
+    { id: 'CONT005', name: 'Testimonials', images: ['https://picsum.photos/seed/c8/800/450', 'https://picsum.photos/seed/c9/800/450'] },
+    { id: 'CONT006', name: 'Vehicle Category Images', images: ['https://picsum.photos/seed/c10/800/450', 'https://picsum.photos/seed/c11/800/450', 'https://picsum.photos/seed/c12/800/450'] },
+    { id: 'CONT007', name: 'Safety Guidelines', images: ['https://picsum.photos/seed/c13/800/450'] },
+    { id: 'CONT008', name: 'Blog Post "Top 5 Roadtrips"', images: ['https://picsum.photos/seed/c14/800/450'] },
+    { id: 'CONT009', name: 'FAQ Images', images: ['https://picsum.photos/seed/c15/800/450'] },
+    { id: 'CONT010', name: 'Contact Us Page Banner', images: ['https://picsum.photos/seed/c16/800/450'] },
+    { id: 'CONT011', name: 'App Download Promotion', images: ['https://picsum.photos/seed/c17/800/450', 'https://picsum.photos/seed/c18/800/450'] },
 ];
 
 function ContentDialog({ onSave, trigger, contentToEdit }: { onSave: (item: Omit<ContentItem, 'id'>, idToSave: string) => void, trigger: React.ReactNode, contentToEdit?: ContentItem | null }) {
@@ -150,6 +160,10 @@ export default function ContentPosterPage() {
     const [contentList, setContentList] = useState(initialContent);
     const [viewingContent, setViewingContent] = useState<ContentItem | null>(null);
     const { toast } = useToast();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const page = searchParams.get('page') || '1';
 
     const handleSaveContent = (item: Omit<ContentItem, 'id'>, idToSave: string) => {
         const isEditing = contentList.some(c => c.id === idToSave);
@@ -176,6 +190,14 @@ export default function ContentPosterPage() {
         setContentList(contentList.filter(c => c.id !== id));
         toast({ title: "Content Deleted", variant: "destructive" });
     }
+
+    const currentPage = parseInt(page, 10);
+    const itemsPerPage = 10;
+    const paginatedContent = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return contentList.slice(startIndex, startIndex + itemsPerPage);
+    }, [contentList, currentPage]);
+
 
     return (
         <>
@@ -206,7 +228,7 @@ export default function ContentPosterPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {contentList.map((item) => (
+                            {paginatedContent.map((item) => (
                                 <TableRow key={item.id}>
                                     <TableCell>
                                         <Image src={item.images[0] || 'https://picsum.photos/200/112'} alt={item.name} width={100} height={56} className="rounded-md object-cover aspect-video" />
@@ -252,6 +274,12 @@ export default function ContentPosterPage() {
                             ))}
                         </TableBody>
                     </Table>
+                     <Pagination
+                        currentPage={currentPage}
+                        totalCount={contentList.length}
+                        pageSize={itemsPerPage}
+                        path={pathname}
+                    />
                 </CardContent>
             </Card>
 
@@ -262,3 +290,5 @@ export default function ContentPosterPage() {
         </>
     );
 }
+
+    

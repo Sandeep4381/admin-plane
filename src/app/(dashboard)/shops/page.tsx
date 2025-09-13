@@ -7,10 +7,9 @@ import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound, Eye, Wallet, TrendingUp, DollarSign } from "lucide-react";
+import { PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound, Eye } from "lucide-react";
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -20,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
+import { Pagination } from '@/components/common/pagination';
 
 type Shop = {
   id: string;
@@ -44,6 +44,11 @@ const initialShopsData: Shop[] = [
   { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/9/400/300', shopImageUrl: 'https://picsum.photos/seed/10/400/300', platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'individual' },
   { id: 'S006', name: 'Blocked Wheels', city: 'Miami', owner: 'Frank White', verified: false, status: 'blocked', documentUrl: 'https://picsum.photos/seed/11/400/300', shopImageUrl: 'https://picsum.photos/seed/12/400/300', platformEarnings: 500, totalBookingAmount: 5000, shopProfit: 4500, shopType: 'vendor' },
   { id: 'S007', name: 'Rejected Rides', city: 'Seattle', owner: 'Grace Hall', verified: false, status: 'rejected', documentUrl: 'https://picsum.photos/seed/13/400/300', shopImageUrl: 'https://picsum.photos/seed/14/400/300', platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'individual' },
+  { id: 'S008', name: 'Luxury Drives', city: 'New York', owner: 'Emily Clark', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/15/400/300', shopImageUrl: 'https://picsum.photos/seed/16/400/300', platformEarnings: 22000, totalBookingAmount: 220000, shopProfit: 198000, shopType: 'vendor' },
+  { id: 'S009', name: 'Eco-Friendly Rentals', city: 'San Francisco', owner: 'Michael Brown', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/17/400/300', shopImageUrl: 'https://picsum.photos/seed/18/400/300', platformEarnings: 9500, totalBookingAmount: 95000, shopProfit: 85500, shopType: 'individual' },
+  { id: 'S010', name: 'Adventure Vehicles', city: 'Denver', owner: 'Sarah Davis', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/19/400/300', shopImageUrl: 'https://picsum.photos/seed/20/400/300', platformEarnings: 0, totalBookingAmount: 0, shopProfit: 0, shopType: 'vendor' },
+  { id: 'S011', name: 'The Bike Shop', city: 'Austin', owner: 'Chris Green', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/21/400/300', shopImageUrl: 'https://picsum.photos/seed/22/400/300', platformEarnings: 4000, totalBookingAmount: 40000, shopProfit: 36000, shopType: 'vendor' },
+  { id: 'S012', name: 'Scoot Central', city: 'Portland', owner: 'Jessica White', verified: true, status: 'restricted', documentUrl: 'https://picsum.photos/seed/23/400/300', shopImageUrl: 'https://picsum.photos/seed/24/400/300', platformEarnings: 1500, totalBookingAmount: 15000, shopProfit: 13500, shopType: 'individual' },
 ];
 
 const topBookingsData = [
@@ -124,6 +129,7 @@ function ShopsPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
+  const page = searchParams.get('page') || '1';
   
   const [currentSearch, setCurrentSearch] = useState(searchParams.get('search') || "");
 
@@ -154,7 +160,7 @@ function ShopsPageContent() {
   );
   
   const handleTabChange = (value: string) => {
-    router.push(`${pathname}?${createQueryString('tab', value)}`);
+    router.push(`${pathname}?${createQueryString('tab', value)}&${createQueryString('page', '1')}`);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,8 +286,6 @@ function ShopsPageContent() {
 
     if (tab && tab !== 'all') {
       results = results.filter(s => s.status === tab);
-    } else {
-       results = results.filter(s => s.status !== 'blocked');
     }
     
     if (searchTerm) {
@@ -290,6 +294,13 @@ function ShopsPageContent() {
     
     return results;
   }, [shops, tab, searchParams]);
+
+  const currentPage = parseInt(page, 10);
+  const itemsPerPage = 10;
+  const paginatedShops = useMemo(() => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      return filteredShops.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredShops, currentPage]);
   
 
   const ShopsTable = ({ shopsToShow }: { shopsToShow: Shop[] }) => (
@@ -323,7 +334,7 @@ function ShopsPageContent() {
                   {shop.status}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="text-center">
                  <div className="flex items-center justify-center gap-2">
                     <Button variant="ghost" size="icon" onClick={() => setViewingShop(shop)}>
                         <Eye className="h-4 w-4" />
@@ -398,7 +409,15 @@ function ShopsPageContent() {
       </CardHeader>
       <CardContent>
          {shopsToShow.length > 0 ? (
-          <ShopsTable shopsToShow={shopsToShow} />
+          <>
+            <ShopsTable shopsToShow={shopsToShow} />
+            <Pagination
+              currentPage={currentPage}
+              totalCount={filteredShops.length}
+              pageSize={itemsPerPage}
+              path={pathname}
+            />
+          </>
         ) : (
           <p>No shops found matching the criteria.</p>
         )}
@@ -479,42 +498,42 @@ function ShopsPageContent() {
           <ShopListContent
             title="All Shops"
             description="A list of all non-blocked shops on the platform."
-            shopsToShow={filteredShops}
+            shopsToShow={paginatedShops}
           />
         </TabsContent>
          <TabsContent value="verified">
           <ShopListContent
             title="Verified Shops"
             description="Shops that have completed the verification process."
-            shopsToShow={filteredShops}
+            shopsToShow={paginatedShops}
           />
         </TabsContent>
          <TabsContent value="pending">
           <ShopListContent
             title="Pending Verification"
             description="Shops awaiting verification from the admin team."
-            shopsToShow={filteredShops}
+            shopsToShow={paginatedShops}
           />
         </TabsContent>
         <TabsContent value="restricted">
           <ShopListContent
             title="Restricted Shops"
             description="Shops with limited visibility or functionality."
-            shopsToShow={filteredShops}
+            shopsToShow={paginatedShops}
           />
         </TabsContent>
         <TabsContent value="blocked">
           <ShopListContent
             title="Blocked Shops"
             description="Shops that have been blocked from the platform."
-            shopsToShow={filteredShops}
+            shopsToShow={paginatedShops}
           />
         </TabsContent>
         <TabsContent value="rejected">
           <ShopListContent
             title="Rejected Shops"
             description="Shops that did not meet the verification criteria."
-            shopsToShow={filteredShops}
+            shopsToShow={paginatedShops}
           />
         </TabsContent>
       </Tabs>
@@ -687,3 +706,5 @@ export default function ShopsPage() {
     </React.Suspense>
   );
 }
+
+    

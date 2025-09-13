@@ -2,13 +2,14 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, UserX, Download, Search, ShieldCheck, ArrowLeft, Eye } from "lucide-react";
+import { PlusCircle, Trash2, Edit, UserX, Download, Search, ArrowLeft, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -16,8 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Pagination } from '@/components/common/pagination';
 
 
 type Admin = {
@@ -35,6 +36,12 @@ const initialAdmins: Admin[] = [
   { id: 'ADM003', name: 'Amit Patel', email: 'amit.patel@example.com', role: 'Finance Head', lastLogin: '2024-07-21 03:15 PM', status: 'active' },
   { id: 'ADM004', name: 'Sunita Rao', email: 'sunita.rao@example.com', role: 'Operations Lead', lastLogin: '2024-07-20 11:00 AM', status: 'suspended' },
   { id: 'ADM005', name: 'Rahul Kumar', email: 'rahul@gmail.com', role: 'Finance Head', lastLogin: 'Never', status: 'active' },
+  { id: 'ADM006', name: 'Anjali Mehta', email: 'anjali.mehta@example.com', role: 'Support Manager', lastLogin: '2024-07-23 10:00 AM', status: 'active' },
+  { id: 'ADM007', name: 'Sanjay Verma', email: 'sanjay.verma@example.com', role: 'Operations Lead', lastLogin: '2024-07-23 09:00 AM', status: 'active' },
+  { id: 'ADM008', name: 'Pooja Desai', email: 'pooja.desai@example.com', role: 'Finance Head', lastLogin: '2024-07-22 08:30 AM', status: 'active' },
+  { id: 'ADM009', name: 'Vikram Singh', email: 'vikram.singh@example.com', role: 'Support Manager', lastLogin: '2024-07-21 05:45 PM', status: 'suspended' },
+  { id: 'ADM010', name: 'Neha Gupta', email: 'neha.gupta@example.com', role: 'Analyzer', lastLogin: '2024-07-23 11:00 AM', status: 'active' },
+  { id: 'ADM011', name: 'Arun Kumar', email: 'arun.kumar@example.com', role: 'Project Management', lastLogin: '2024-07-23 11:30 AM', status: 'active' },
 ];
 
 const initialRoles = [
@@ -345,6 +352,10 @@ export default function AdminControlsPage() {
     const [isRoleFormVisible, setIsRoleFormVisible] = useState(false);
     const [isRoleViewOnly, setIsRoleViewOnly] = useState(false);
     const { toast } = useToast();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const page = searchParams.get('page') || '1';
 
     const handleSaveAdmin = (newAdminData: Omit<Admin, 'id' | 'lastLogin' | 'status'>, isEditing: boolean) => {
         if (isEditing && editingAdmin) {
@@ -400,6 +411,24 @@ export default function AdminControlsPage() {
         setIsRoleFormVisible(false);
         setEditingRole(null);
     }
+    
+    const currentPage = parseInt(page, 10);
+    const itemsPerPage = 10;
+
+    const paginatedAdmins = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return admins.slice(startIndex, startIndex + itemsPerPage);
+    }, [admins, currentPage]);
+    
+    const paginatedRoles = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return roles.slice(startIndex, startIndex + itemsPerPage);
+    }, [roles, currentPage]);
+
+    const paginatedLogs = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return actionLogs.slice(startIndex, startIndex + itemsPerPage);
+    }, [actionLogs, currentPage]);
 
 
   return (
@@ -439,11 +468,11 @@ export default function AdminControlsPage() {
                                     <TableHead>Role</TableHead>
                                     <TableHead>Last Login</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead>Actions</TableHead>
+                                    <TableHead className="text-center">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {admins.map((admin) => (
+                                {paginatedAdmins.map((admin) => (
                                     <TableRow key={admin.id}>
                                         <TableCell className="font-medium">{admin.name}</TableCell>
                                         <TableCell>{admin.email}</TableCell>
@@ -452,8 +481,8 @@ export default function AdminControlsPage() {
                                         <TableCell>
                                             <Badge variant={admin.status === 'active' ? 'default' : 'destructive'}>{admin.status}</Badge>
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <Button variant="ghost" size="icon" onClick={() => setViewingAdmin(admin)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
@@ -478,6 +507,12 @@ export default function AdminControlsPage() {
                                 ))}
                             </TableBody>
                         </Table>
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalCount={admins.length}
+                            pageSize={itemsPerPage}
+                            path={pathname}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -512,11 +547,11 @@ export default function AdminControlsPage() {
                                         <TableHead>Name</TableHead>
                                         <TableHead>Full Access</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Action</TableHead>
+                                        <TableHead className="text-center">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {roles.map(role => (
+                                    {paginatedRoles.map(role => (
                                         <TableRow key={role.id}>
                                             <TableCell>{role.id}</TableCell>
                                             <TableCell className="font-medium">{role.name}</TableCell>
@@ -530,8 +565,8 @@ export default function AdminControlsPage() {
                                                     {role.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
+                                            <TableCell className="text-center">
+                                                <div className="flex items-center justify-center gap-2">
                                                      <Button variant="ghost" size="icon" onClick={() => handleViewRole(role)}><Eye className="h-4 w-4" /></Button>
                                                      <Button variant="ghost" size="icon" onClick={() => handleEditRole(role)}><Edit className="h-4 w-4" /></Button>
                                                      <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
@@ -542,6 +577,12 @@ export default function AdminControlsPage() {
                                     ))}
                                 </TableBody>
                             </Table>
+                             <Pagination 
+                                currentPage={currentPage}
+                                totalCount={roles.length}
+                                pageSize={itemsPerPage}
+                                path={pathname}
+                            />
                         </CardContent>
                     </Card>
                  )}
@@ -575,7 +616,7 @@ export default function AdminControlsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {actionLogs.map((log) => (
+                                {paginatedLogs.map((log) => (
                                     <TableRow key={log.id}>
                                         <TableCell className="font-medium">{log.admin}</TableCell>
                                         <TableCell>{log.action}</TableCell>
@@ -586,6 +627,12 @@ export default function AdminControlsPage() {
                                 ))}
                             </TableBody>
                         </Table>
+                         <Pagination 
+                            currentPage={currentPage}
+                            totalCount={actionLogs.length}
+                            pageSize={itemsPerPage}
+                            path={pathname}
+                        />
                     </CardContent>
                 </Card>
             </TabsContent>
@@ -611,5 +658,7 @@ export default function AdminControlsPage() {
     </>
   );
 }
+
+    
 
     

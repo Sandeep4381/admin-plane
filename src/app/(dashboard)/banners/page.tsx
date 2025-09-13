@@ -3,12 +3,13 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Eye, MousePointerClick, PowerOff, Power } from "lucide-react";
+import { PlusCircle, Trash2, Edit, TrendingUp, Eye, MousePointerClick, PowerOff, Power } from "lucide-react";
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { useToast } from '@/hooks/use-toast';
 import type { DateRange } from "react-day-picker";
+import { Pagination } from '@/components/common/pagination';
 
 type BannerStatus = 'active' | 'scheduled' | 'expired' | 'disabled';
 type BannerPlacement = 'homepage' | 'offers_page' | 'popup' | 'seasonal';
@@ -38,6 +40,12 @@ const initialBanners: Banner[] = [
   { id: 'BNR003', imageUrl: 'https://picsum.photos/800/400?random=3', placement: 'popup', redirectLink: '/users/verify', validity: { from: new Date('2024-08-01'), to: new Date('2024-08-10') }, status: 'scheduled', impressions: 0, clicks: 0 },
   { id: 'BNR004', imageUrl: 'https://picsum.photos/800/400?random=4', placement: 'homepage', redirectLink: '/offers/summer-sale', validity: { from: new Date('2024-06-01'), to: new Date('2024-06-30') }, status: 'expired', impressions: 250000, clicks: 12500 },
   { id: 'BNR005', imageUrl: 'https://picsum.photos/800/400?random=5', placement: 'seasonal', redirectLink: '/offers/diwali-special', validity: { from: new Date('2024-07-20'), to: new Date('2024-07-25') }, status: 'disabled', impressions: 50000, clicks: 1200 },
+  { id: 'BNR006', imageUrl: 'https://picsum.photos/800/400?random=6', placement: 'homepage', redirectLink: '/new-arrivals', validity: { from: new Date('2024-07-25'), to: new Date('2024-08-25') }, status: 'active', impressions: 120000, clicks: 4800 },
+  { id: 'BNR007', imageUrl: 'https://picsum.photos/800/400?random=7', placement: 'popup', redirectLink: '/subscribe', validity: { from: new Date('2024-09-01'), to: new Date('2024-09-15') }, status: 'scheduled', impressions: 0, clicks: 0 },
+  { id: 'BNR008', imageUrl: 'https://picsum.photos/800/400?random=8', placement: 'offers_page', redirectLink: '/offers/clearance', validity: { from: new Date('2024-05-15'), to: new Date('2024-06-15') }, status: 'expired', impressions: 300000, clicks: 18000 },
+  { id: 'BNR009', imageUrl: 'https://picsum.photos/800/400?random=9', placement: 'homepage', redirectLink: '/', validity: { from: new Date('2024-07-01'), to: new Date('2024-12-31') }, status: 'active', impressions: 500000, clicks: 15000 },
+  { id: 'BNR010', imageUrl: 'https://picsum.photos/800/400?random=10', placement: 'seasonal', redirectLink: '/offers/winter-collection', validity: { from: new Date('2024-11-01'), to: new Date('2024-11-30') }, status: 'scheduled', impressions: 0, clicks: 0 },
+  { id: 'BNR011', imageUrl: 'https://picsum.photos/800/400?random=11', placement: 'offers_page', redirectLink: '/offers/flash-sale', validity: { from: new Date('2024-07-22'), to: new Date('2024-07-22') }, status: 'active', impressions: 25000, clicks: 2500 },
 ];
 
 
@@ -138,6 +146,11 @@ function BannerDialog({ trigger, banner, onSave }: { trigger: React.ReactNode, b
 export default function BannersPage() {
   const [banners, setBanners] = useState(initialBanners);
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const page = searchParams.get('page') || '1';
+
 
   const handleSaveBanner = (bannerData: Omit<Banner, 'impressions' | 'clicks' | 'status'> & { status?: BannerStatus }) => {
       const isEditing = banners.some(b => b.id === bannerData.id);
@@ -183,6 +196,13 @@ export default function BannersPage() {
     return { totalClicks, ctr: ctr.toFixed(2) };
   }, [banners]);
 
+  const currentPage = parseInt(page, 10);
+  const itemsPerPage = 10;
+  const paginatedBanners = useMemo(() => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      return banners.slice(startIndex, startIndex + itemsPerPage);
+  }, [banners, currentPage]);
+
   return (
     <>
       <PageHeader title="Banners">
@@ -216,11 +236,11 @@ export default function BannersPage() {
                             <TableHead>Status</TableHead>
                             <TableHead>Validity</TableHead>
                             <TableHead>Clicks / Impressions</TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {banners.map((banner) => (
+                        {paginatedBanners.map((banner) => (
                             <TableRow key={banner.id}>
                                 <TableCell>
                                     <div className="relative h-10 w-20 rounded-md border" data-ai-hint="advertisement banner">
@@ -241,8 +261,8 @@ export default function BannersPage() {
                                 <TableCell>
                                     {banner.clicks.toLocaleString()} / {banner.impressions.toLocaleString()}
                                 </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
+                                <TableCell className="text-center">
+                                    <div className="flex items-center justify-center gap-2">
                                         <BannerDialog
                                             trigger={
                                                 <Button variant="ghost" size="icon">
@@ -264,9 +284,17 @@ export default function BannersPage() {
                         ))}
                     </TableBody>
                 </Table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalCount={banners.length}
+                    pageSize={itemsPerPage}
+                    path={pathname}
+                />
             </CardContent>
         </Card>
       </div>
     </>
   );
 }
+
+    

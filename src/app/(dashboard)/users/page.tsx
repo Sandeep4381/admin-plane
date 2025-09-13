@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { UserProfileDialog } from './user-profile-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Pagination } from '@/components/common/pagination';
 
 
 export type User = {
@@ -43,6 +44,12 @@ const initialUsersData: User[] = [
   { id: 'U003', name: 'Charlie Brown', email: 'charlie@example.com', phone: '345-678-9012', isVerified: true, totalRentals: 2, cancellations: 2, lifetimeSpend: 1200, status: 'inactive', walletBalance: 0, lastLogin: '2024-06-15T11:20:00Z', loyalty: 'Bronze', profilePhotoUrl: 'https://picsum.photos/id/1008/100/100' },
   { id: 'U004', name: 'Diana Miller', email: 'diana@example.com', phone: '456-789-0123', isVerified: true, totalRentals: 25, cancellations: 0, lifetimeSpend: 25000, status: 'active', walletBalance: 1500, lastLogin: '2024-07-22T08:45:00Z', loyalty: 'Gold', profilePhotoUrl: 'https://picsum.photos/id/1011/100/100' },
   { id: 'U005', name: 'Ethan Davis', email: 'ethan@example.com', phone: '567-890-1234', isVerified: false, totalRentals: 0, cancellations: 0, lifetimeSpend: 0, status: 'blocked', walletBalance: 0, lastLogin: '2024-05-01T18:00:00Z', loyalty: null, profilePhotoUrl: 'https://picsum.photos/id/1012/100/100' },
+  { id: 'U006', name: 'Fiona Green', email: 'fiona@example.com', phone: '678-901-2345', isVerified: true, totalRentals: 12, cancellations: 0, lifetimeSpend: 9800, status: 'active', walletBalance: 300, lastLogin: '2024-07-23T11:00:00Z', loyalty: 'Silver', profilePhotoUrl: 'https://picsum.photos/id/1013/100/100' },
+  { id: 'U007', name: 'George White', email: 'george@example.com', phone: '789-012-3456', isVerified: false, totalRentals: 1, cancellations: 1, lifetimeSpend: 300, status: 'inactive', walletBalance: 0, lastLogin: '2024-07-01T09:00:00Z', loyalty: null, profilePhotoUrl: 'https://picsum.photos/id/1014/100/100' },
+  { id: 'U008', name: 'Hannah Black', email: 'hannah@example.com', phone: '890-123-4567', isVerified: true, totalRentals: 30, cancellations: 2, lifetimeSpend: 32000, status: 'active', walletBalance: 2500, lastLogin: '2024-07-23T10:30:00Z', loyalty: 'Gold', profilePhotoUrl: 'https://picsum.photos/id/1015/100/100' },
+  { id: 'U009', name: 'Ian Blue', email: 'ian@example.com', phone: '901-234-5678', isVerified: false, totalRentals: 0, cancellations: 0, lifetimeSpend: 0, status: 'active', walletBalance: 0, lastLogin: '2024-07-23T12:00:00Z', loyalty: null, profilePhotoUrl: 'https://picsum.photos/id/1016/100/100' },
+  { id: 'U010', name: 'Jack Grey', email: 'jack@example.com', phone: '012-345-6789', isVerified: true, totalRentals: 8, cancellations: 0, lifetimeSpend: 6700, status: 'active', walletBalance: 100, lastLogin: '2024-07-22T18:00:00Z', loyalty: 'Bronze', profilePhotoUrl: 'https://picsum.photos/id/1018/100/100' },
+  { id: 'U011', name: 'Karen Brown', email: 'karen@example.com', phone: '112-233-4455', isVerified: true, totalRentals: 3, cancellations: 3, lifetimeSpend: 1500, status: 'blocked', walletBalance: 0, lastLogin: '2024-06-30T14:00:00Z', loyalty: null, profilePhotoUrl: 'https://picsum.photos/id/1019/100/100' },
 ];
 
 
@@ -99,6 +106,7 @@ function UsersPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
+  const page = searchParams.get('page') || '1';
   
   const [currentSearch, setCurrentSearch] = useState(searchParams.get('search') || "");
   const [users, setUsers] = useState(initialUsersData);
@@ -124,7 +132,7 @@ function UsersPageContent() {
   );
   
   const handleTabChange = (value: string) => {
-    router.push(`${pathname}?${createQueryString('tab', value)}`);
+    router.push(`${pathname}?${createQueryString('tab', value)}&${createQueryString('page','1')}`);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,6 +246,13 @@ function UsersPageContent() {
     return results;
   }, [users, tab, searchParams]);
 
+  const currentPage = parseInt(page, 10);
+  const itemsPerPage = 10;
+  const paginatedUsers = useMemo(() => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      return filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredUsers, currentPage]);
+
   return (
     <>
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -299,7 +314,7 @@ function UsersPageContent() {
         </TabsList>
         <Card className="mt-4">
           <CardContent className="p-0">
-             {filteredUsers.length > 0 ? (
+             {paginatedUsers.length > 0 ? (
                  <div className="overflow-x-auto">
                  <Table>
                     <TableHeader>
@@ -310,11 +325,11 @@ function UsersPageContent() {
                         <TableHead>Cancellations</TableHead>
                         <TableHead>Lifetime Spend</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredUsers.map((user) => (
+                        {paginatedUsers.map((user) => (
                         <TableRow key={user.id}>
                             <TableCell>
                                 <div className="font-medium">{user.name}</div>
@@ -337,8 +352,8 @@ function UsersPageContent() {
                                 {user.status}
                             </Badge>
                             </TableCell>
-                            <TableCell>
-                                <div className="flex items-center gap-2">
+                            <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
                                     <Button variant="ghost" size="icon" onClick={() => setViewingUser(user)}>
                                         <Eye className="h-4 w-4" />
                                     </Button>
@@ -390,6 +405,12 @@ function UsersPageContent() {
                         ))}
                     </TableBody>
                 </Table>
+                <Pagination
+                    currentPage={currentPage}
+                    totalCount={filteredUsers.length}
+                    pageSize={itemsPerPage}
+                    path={pathname}
+                />
                 </div>
             ) : (
               <div className="p-6 text-center text-muted-foreground">No users found matching the criteria.</div>
@@ -441,3 +462,5 @@ export default function UsersPage() {
         </React.Suspense>
     )
 }
+
+    

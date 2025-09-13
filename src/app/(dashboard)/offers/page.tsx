@@ -3,12 +3,13 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, PlusCircle, Trash2, Edit, TrendingUp, Percent, Tag, Users, Calendar, PlayCircle } from "lucide-react";
+import { PlusCircle, Trash2, Edit, TrendingUp, Percent, Tag, Users, Calendar, PlayCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ import { DatePickerWithRange } from '@/components/ui/date-range-picker';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { DateRange } from "react-day-picker"
+import { Pagination } from '@/components/common/pagination';
 
 type OfferStatus = 'active' | 'scheduled' | 'expired';
 type OfferType = 'percentage' | 'flat' | 'free_km';
@@ -41,6 +43,12 @@ const initialOffers: Offer[] = [
   { id: 'OFF003', name: 'Independence Day Special', type: 'percentage', discountValue: 15, validity: { from: new Date('2024-08-14'), to: new Date('2024-08-16') }, targetAudience: 'all', usageCount: 0, budgetUsed: 0, status: 'scheduled' },
   { id: 'OFF004', name: 'Summer Sale', type: 'percentage', discountValue: 10, validity: { from: new Date('2024-06-01'), to: new Date('2024-06-30') }, targetAudience: 'all', usageCount: 2500, budgetUsed: 125000, status: 'expired' },
   { id: 'OFF005', name: 'Welcome Back', type: 'flat', discountValue: 50, validity: { from: new Date('2024-07-01'), to: new Date('2024-09-30') }, targetAudience: 'inactive', usageCount: 250, budgetUsed: 12500, status: 'active' },
+  { id: 'OFF006', name: 'Weekend Getaway', type: 'percentage', discountValue: 15, validity: { from: new Date('2024-07-20'), to: new Date('2024-08-20') }, targetAudience: 'all', usageCount: 500, budgetUsed: 40000, status: 'active' },
+  { id: 'OFF007', name: 'New User Bonus', type: 'flat', discountValue: 100, validity: { from: new Date('2024-08-01'), to: new Date('2024-08-31') }, targetAudience: 'new', usageCount: 0, budgetUsed: 0, status: 'scheduled' },
+  { id: 'OFF008', name: 'Loyalty Reward', type: 'free_km', discountValue: 50, validity: { from: new Date('2024-07-01'), to: new Date('2024-12-31') }, targetAudience: 'verified', usageCount: 150, budgetUsed: 15000, status: 'active' },
+  { id: 'OFF009', name: 'Early Bird Discount', type: 'percentage', discountValue: 25, validity: { from: new Date('2024-05-01'), to: new Date('2024-05-31') }, targetAudience: 'all', usageCount: 1200, budgetUsed: 80000, status: 'expired' },
+  { id: 'OFF010', name: 'Referral Bonus', type: 'flat', discountValue: 75, validity: { from: new Date('2024-01-01'), to: new Date('2024-12-31') }, targetAudience: 'all', usageCount: 3000, budgetUsed: 225000, status: 'active' },
+  { id: 'OFF011', name: 'Student Discount', type: 'percentage', discountValue: 10, validity: { from: new Date('2024-09-01'), to: new Date('2024-09-30') }, targetAudience: 'all', usageCount: 0, budgetUsed: 0, status: 'scheduled' },
 ];
 
 function StatCard({ title, value, icon: Icon }: { title: string; value: string; icon: React.ElementType }) {
@@ -188,6 +196,10 @@ function DeleteDialog({ onConfirm, children }: { onConfirm: () => void, children
 export default function OffersPage() {
     const [offers, setOffers] = useState(initialOffers);
     const { toast } = useToast();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const page = searchParams.get('page') || '1';
 
     const handleSaveOffer = (offer: Offer) => {
         const isEditing = offers.some(o => o.id === offer.id);
@@ -225,6 +237,25 @@ export default function OffersPage() {
         expired: offers.filter(o => o.status === 'expired'),
     }), [offers]);
 
+    const currentPage = parseInt(page, 10);
+    const itemsPerPage = 10;
+    
+    const paginatedActiveOffers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredOffers.active.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredOffers.active, currentPage]);
+    
+    const paginatedScheduledOffers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredOffers.scheduled.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredOffers.scheduled, currentPage]);
+
+    const paginatedExpiredOffers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredOffers.expired.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredOffers.expired, currentPage]);
+
+
   return (
     <>
       <PageHeader title="Offers & Campaigns">
@@ -254,7 +285,8 @@ export default function OffersPage() {
                         <CardDescription>Monitor and manage your currently active offers.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <OffersTable offers={filteredOffers.active} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
+                        <OffersTable offers={paginatedActiveOffers} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
+                        <Pagination currentPage={currentPage} totalCount={filteredOffers.active.length} pageSize={itemsPerPage} path={pathname} />
                     </CardContent>
                 </Card>
             </div>
@@ -266,7 +298,8 @@ export default function OffersPage() {
                     <CardDescription>These offers are scheduled to go live in the future.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <OffersTable offers={filteredOffers.scheduled} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
+                    <OffersTable offers={paginatedScheduledOffers} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
+                    <Pagination currentPage={currentPage} totalCount={filteredOffers.scheduled.length} pageSize={itemsPerPage} path={pathname} />
                 </CardContent>
             </Card>
          </TabsContent>
@@ -277,7 +310,8 @@ export default function OffersPage() {
                     <CardDescription>These offers have already ended.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <OffersTable offers={filteredOffers.expired} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
+                    <OffersTable offers={paginatedExpiredOffers} onSave={handleSaveOffer} onDelete={handleDeleteOffer} onActivate={handleActivateOffer} />
+                    <Pagination currentPage={currentPage} totalCount={filteredOffers.expired.length} pageSize={itemsPerPage} path={pathname} />
                 </CardContent>
             </Card>
          </TabsContent>
@@ -310,7 +344,7 @@ function OffersTable({ offers, onSave, onDelete, onActivate }: { offers: Offer[]
                     <TableHead>Validity</TableHead>
                     <TableHead>Target Audience</TableHead>
                     <TableHead>Usage</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -322,8 +356,8 @@ function OffersTable({ offers, onSave, onDelete, onActivate }: { offers: Offer[]
                         <TableCell>{formatDate(offer.validity.from as Date)} - {formatDate(offer.validity.to as Date)}</TableCell>
                         <TableCell><Badge variant="outline" className="capitalize">{offer.targetAudience}</Badge></TableCell>
                         <TableCell>{offer.usageCount.toLocaleString()}</TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
+                        <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
                                 {offer.status !== 'expired' && (
                                 <OfferDialog
                                     trigger={
@@ -353,3 +387,5 @@ function OffersTable({ offers, onSave, onDelete, onActivate }: { offers: Offer[]
         </Table>
     )
 }
+
+    

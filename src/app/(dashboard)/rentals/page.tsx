@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Pagination } from '@/components/common/pagination';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
@@ -84,6 +85,7 @@ function RentalsPageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab') || 'all';
+  const page = searchParams.get('page') || '1';
   const [currentSearch, setCurrentSearch] = useState(searchParams.get('search') || "");
   const [rentals, setRentals] = useState<Rental[]>(initialRentalsData);
   const [viewingRental, setViewingRental] = useState<Rental | null>(null);
@@ -104,7 +106,7 @@ function RentalsPageContent() {
   );
 
   const handleTabChange = (value: string) => {
-    router.push(`${pathname}?${createQueryString('tab', value)}`);
+    router.push(`${pathname}?${createQueryString('tab', value)}&${createQueryString('page', '1')}`);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +135,13 @@ function RentalsPageContent() {
     
     return results;
   }, [rentals, tab, searchParams]);
+
+  const currentPage = parseInt(page, 10);
+  const itemsPerPage = 10;
+  const paginatedRentals = useMemo(() => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      return filteredRentals.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredRentals, currentPage]);
   
   const handleViewDetails = (rental: Rental) => {
     setViewingRental(rental);
@@ -220,11 +229,17 @@ function RentalsPageContent() {
           <Card className="mt-4">
             <CardContent className="p-0">
                <RentalsTable 
-                rentals={filteredRentals} 
+                rentals={paginatedRentals} 
                 onViewDetails={handleViewDetails}
                 onCancel={handleCancelRental}
                 onRefund={handleRefund}
                 onReassign={handleReassign}
+               />
+               <Pagination 
+                currentPage={currentPage}
+                totalCount={filteredRentals.length}
+                pageSize={itemsPerPage}
+                path={pathname}
                />
             </CardContent>
           </Card>
@@ -247,3 +262,5 @@ export default function RentalsPage() {
     </React.Suspense>
   );
 }
+
+    

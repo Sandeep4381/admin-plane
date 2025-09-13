@@ -2,12 +2,13 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Search, Reply, Send, MoreHorizontal, UserCheck, CheckCircle, Circle } from "lucide-react";
+import { Eye, Search, Reply, Send, UserCheck, CheckCircle, Circle, MoreHorizontal } from "lucide-react";
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -16,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
+import { Pagination } from '@/components/common/pagination';
 
 
 type TicketStatus = 'Open' | 'In Progress' | 'Resolved' | 'Closed';
@@ -86,6 +88,79 @@ const initialTickets: Ticket[] = [
         { author: 'Amit Patel', message: 'Hello! You can find the document upload section in your Shop Profile, under the "Verification" tab.', timestamp: '2024-07-20 11:15 AM', avatar: 'https://picsum.photos/id/102/40/40' },
     ]
   },
+  { 
+    id: 'TKT004', 
+    subject: 'App crashing on startup', 
+    user: 'Diana Miller', 
+    shop: null, 
+    status: 'Open', 
+    priority: 'High', 
+    createdAt: '2024-07-23 09:00 AM',
+    lastReply: '2024-07-23 09:02 AM',
+    assignedTo: 'Unassigned',
+    conversation: [
+        { author: 'Diana Miller', message: 'The app keeps crashing every time I open it on my new phone.', timestamp: '2024-07-23 09:00 AM', avatar: 'https://picsum.photos/id/1011/40/40' },
+    ]
+  },
+  { 
+    id: 'TKT005', 
+    subject: 'Refund not processed', 
+    user: 'Ethan Davis', 
+    shop: 'Metro Auto', 
+    status: 'In Progress', 
+    priority: 'Medium', 
+    createdAt: '2024-07-22 05:00 PM',
+    lastReply: '2024-07-23 10:15 AM',
+    assignedTo: 'Priya Singh',
+    conversation: [
+        { author: 'Ethan Davis', message: 'I cancelled my booking a week ago but still haven\'t received my refund.', timestamp: '2024-07-22 05:00 PM', avatar: 'https://picsum.photos/id/1012/40/40' },
+        { author: 'Priya Singh', message: 'Checking on this for you right away. I see the refund was initiated. I will follow up with our payment gateway.', timestamp: '2024-07-23 10:15 AM', avatar: 'https://picsum.photos/id/1025/40/40' },
+    ]
+  },
+   {
+    id: 'TKT006',
+    subject: 'Unable to change profile picture',
+    user: 'Fiona Green',
+    shop: null,
+    status: 'Resolved',
+    priority: 'Low',
+    createdAt: '2024-07-19 02:30 PM',
+    lastReply: '2024-07-19 02:45 PM',
+    assignedTo: 'Amit Patel',
+    conversation: [
+      { author: 'Fiona Green', message: 'I can\'t seem to update my profile picture.', timestamp: '2024-07-19 02:30 PM', avatar: 'https://picsum.photos/id/1013/40/40' },
+      { author: 'Amit Patel', message: 'Hi Fiona, please make sure the image is in JPG or PNG format and less than 2MB. Let me know if you still face issues.', timestamp: '2024-07-19 02:45 PM', avatar: 'https://picsum.photos/id/102/40/40' },
+    ]
+  },
+  {
+    id: 'TKT007',
+    subject: 'Safety concern with a vehicle',
+    user: 'George White',
+    shop: 'Speedy Bikes',
+    status: 'Open',
+    priority: 'High',
+    createdAt: '2024-07-23 11:00 AM',
+    lastReply: '2024-07-23 11:05 AM',
+    assignedTo: 'Rohan Sharma',
+    conversation: [
+      { author: 'George White', message: 'The brakes on the bike I rented felt very loose and unsafe.', timestamp: '2024-07-23 11:00 AM', avatar: 'https://picsum.photos/id/1014/40/40' },
+    ]
+  },
+  {
+    id: 'TKT008',
+    subject: 'Question about monthly subscription',
+    user: 'Hannah Black',
+    shop: null,
+    status: 'Closed',
+    priority: 'Low',
+    createdAt: '2024-07-18 01:00 PM',
+    lastReply: '2024-07-18 01:20 PM',
+    assignedTo: 'Sunita Rao',
+    conversation: [
+       { author: 'Hannah Black', message: 'Do you offer any monthly subscription plans?', timestamp: '2024-07-18 01:00 PM', avatar: 'https://picsum.photos/id/1015/40/40' },
+       { author: 'Sunita Rao', message: 'Hi Hannah, we do! You can find all details under the "Subscriptions" section in the app menu.', timestamp: '2024-07-18 01:20 PM', avatar: 'https://picsum.photos/id/103/40/40' },
+    ]
+  },
 ];
 
 const teamMembers = ['Priya Singh', 'Rohan Sharma', 'Amit Patel', 'Sunita Rao', 'Rahul Kumar'];
@@ -139,6 +214,11 @@ export default function SupportPage() {
     const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
     const [viewingTicket, setViewingTicket] = useState<Ticket | null>(null);
     const { toast } = useToast();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const page = searchParams.get('page') || '1';
+    const tab = searchParams.get('tab') || 'open';
     
     const priorityVariant: Record<TicketPriority, 'destructive' | 'default' | 'secondary'> = {
         High: 'destructive',
@@ -163,11 +243,22 @@ export default function SupportPage() {
         toast({ title: 'Ticket Closed', description: `Ticket ${ticketId} has been closed.` });
     };
 
+    const filteredTickets = useMemo(() => {
+        let results = tickets;
+        const currentTab = tab as TicketStatus | 'all';
+        if (currentTab !== 'all') {
+            results = tickets.filter(ticket => ticket.status.toLowerCase().replace(' ', '_') === currentTab);
+        }
+        return results;
+    }, [tickets, tab]);
 
-    const filteredTickets = (status: TicketStatus | 'All') => {
-        if (status === 'All') return tickets;
-        return tickets.filter(ticket => ticket.status === status);
-    };
+    const currentPage = parseInt(page, 10);
+    const itemsPerPage = 10;
+    const paginatedTickets = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredTickets.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredTickets, currentPage]);
+
 
     return (
         <>
@@ -177,7 +268,7 @@ export default function SupportPage() {
                     <Input placeholder="Search tickets..." className="pl-8" />
                 </div>
             </PageHeader>
-            <Tabs defaultValue="open">
+            <Tabs defaultValue={tab} onValueChange={(value) => router.push(`${pathname}?tab=${value}&page=1`)}>
                 <TabsList>
                     <TabsTrigger value="open">Open</TabsTrigger>
                     <TabsTrigger value="in_progress">In Progress</TabsTrigger>
@@ -190,18 +281,13 @@ export default function SupportPage() {
                         <CardDescription>Manage and respond to user and shop support tickets.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <TabsContent value="open">
-                            <TicketsTable tickets={filteredTickets('Open')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
-                        </TabsContent>
-                         <TabsContent value="in_progress">
-                            <TicketsTable tickets={filteredTickets('In Progress')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
-                        </TabsContent>
-                         <TabsContent value="resolved">
-                            <TicketsTable tickets={filteredTickets('Resolved')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
-                        </TabsContent>
-                         <TabsContent value="closed">
-                            <TicketsTable tickets={filteredTickets('Closed')} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
-                        </TabsContent>
+                        <TicketsTable tickets={paginatedTickets} setViewingTicket={setViewingTicket} priorityVariant={priorityVariant} statusVariant={statusVariant} onAssign={handleAssignTicket} onClose={handleCloseTicket} />
+                        <Pagination 
+                            currentPage={currentPage}
+                            totalCount={filteredTickets.length}
+                            pageSize={itemsPerPage}
+                            path={pathname}
+                        />
                     </CardContent>
                 </Card>
             </Tabs>
@@ -249,43 +335,35 @@ function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVarian
                         <TableCell>{ticket.lastReply}</TableCell>
                         <TableCell>{ticket.assignedTo}</TableCell>
                         <TableCell className="text-center">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuItem onSelect={() => setViewingTicket(ticket)}>
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        View Ticket
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger>
-                                            <UserCheck className="mr-2 h-4 w-4" />
-                                            Assign Agent
-                                        </DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent>
-                                            {teamMembers.map(agent => (
-                                                <DropdownMenuItem key={agent} onSelect={() => onAssign(ticket.id, agent)}>
-                                                    {agent === ticket.assignedTo ? (
-                                                        <Circle className="mr-2 h-4 w-4 fill-foreground" />
-                                                    ) : (
-                                                        <Circle className="mr-2 h-4 w-4" />
-                                                    )}
-                                                    {agent}
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuSub>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onSelect={() => onClose(ticket.id)}>
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                        Close Ticket
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <div className="flex items-center justify-center gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => setViewingTicket(ticket)}>
+                                    <Eye className="h-4 w-4" />
+                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                            <UserCheck className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuLabel>Assign Agent</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        {teamMembers.map(agent => (
+                                            <DropdownMenuItem key={agent} onSelect={() => onAssign(ticket.id, agent)}>
+                                                {agent === ticket.assignedTo ? (
+                                                    <Circle className="mr-2 h-4 w-4 fill-foreground" />
+                                                ) : (
+                                                    <Circle className="mr-2 h-4 w-4" />
+                                                )}
+                                                {agent}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <Button variant="ghost" size="icon" onClick={() => onClose(ticket.id)}>
+                                    <CheckCircle className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </TableCell>
                     </TableRow>
                 ))}
@@ -293,3 +371,5 @@ function TicketsTable({ tickets, setViewingTicket, priorityVariant, statusVarian
         </Table>
     )
 }
+
+    
