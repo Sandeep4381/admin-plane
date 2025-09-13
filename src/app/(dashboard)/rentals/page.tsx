@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { useMemo, useState, useCallback } from 'react';
@@ -13,7 +14,7 @@ import { RentalDetailsDrawer } from './rental-details-drawer';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 
 function StatCard({ title, value, icon: Icon }: { title: string, value: string, icon: React.ElementType }) {
@@ -55,12 +56,7 @@ export function ActionDialog({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <DropdownMenuItem 
-          className={destructive ? "text-destructive" : ""}
-          onSelect={(e) => e.preventDefault()}
-        >
-          {trigger}
-        </DropdownMenuItem>
+        {trigger}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

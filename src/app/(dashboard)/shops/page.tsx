@@ -8,10 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MoreHorizontal, PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound } from "lucide-react";
+import { PlusCircle, Search, CheckCircle, XCircle, Ban, Edit, Trash2, KeyRound, Eye } from "lucide-react";
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -33,13 +32,13 @@ type Shop = {
 };
 
 const initialShopsData: Shop[] = [
-  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
-  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
-  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
-  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
-  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
-  { id: 'S006', name: 'Blocked Wheels', city: 'Miami', owner: 'Frank White', verified: false, status: 'blocked', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
-  { id: 'S007', name: 'Rejected Rides', city: 'Seattle', owner: 'Grace Hall', verified: false, status: 'rejected', documentUrl: 'https://picsum.photos/400/300', shopImageUrl: 'https://picsum.photos/400/300' },
+  { id: 'S001', name: 'Deluxe Car Rentals', city: 'New York', owner: 'John Doe', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/1/400/300', shopImageUrl: 'https://picsum.photos/seed/2/400/300' },
+  { id: 'S002', name: 'Speedy Bikes', city: 'Los Angeles', owner: 'Jane Smith', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/3/400/300', shopImageUrl: 'https://picsum.photos/seed/4/400/300' },
+  { id: 'S003', name: 'City Scooters', city: 'Chicago', owner: 'Peter Jones', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/5/400/300', shopImageUrl: 'https://picsum.photos/seed/6/400/300' },
+  { id: 'S004', name: 'Metro Auto', city: 'Houston', owner: 'Mary Johnson', verified: true, status: 'verified', documentUrl: 'https://picsum.photos/seed/7/400/300', shopImageUrl: 'https://picsum.photos/seed/8/400/300' },
+  { id: 'S005', name: 'Suburban Rides', city: 'Phoenix', owner: 'David Williams', verified: false, status: 'pending', documentUrl: 'https://picsum.photos/seed/9/400/300', shopImageUrl: 'https://picsum.photos/seed/10/400/300' },
+  { id: 'S006', name: 'Blocked Wheels', city: 'Miami', owner: 'Frank White', verified: false, status: 'blocked', documentUrl: 'https://picsum.photos/seed/11/400/300', shopImageUrl: 'https://picsum.photos/seed/12/400/300' },
+  { id: 'S007', name: 'Rejected Rides', city: 'Seattle', owner: 'Grace Hall', verified: false, status: 'rejected', documentUrl: 'https://picsum.photos/seed/13/400/300', shopImageUrl: 'https://picsum.photos/seed/14/400/300' },
 ];
 
 function ActionDialog({
@@ -100,6 +99,7 @@ function ShopsPageContent() {
 
   const [shops, setShops] = useState(initialShopsData);
   const [editingShop, setEditingShop] = useState<Shop | null>(null);
+  const [viewingShop, setViewingShop] = useState<Shop | null>(null);
   const [verifyingShop, setVerifyingShop] = useState<Shop | null>(null);
   const [newShop, setNewShop] = useState({ name: '', city: '', owner: '' });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -295,60 +295,64 @@ function ShopsPageContent() {
                 </Badge>
               </TableCell>
               <TableCell>
-                {shop.status === 'pending' ? (
-                  <Button variant="outline" size="sm" onClick={() => handleVerifyOpen(shop)}>
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Verify
-                  </Button>
-                ) : (
-                   <div className="flex items-center gap-2">
-                    {shop.status !== 'blocked' && (
-                        <Button variant="ghost" size="icon" onClick={() => handleEditOpen(shop)}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                    )}
-                     {shop.status !== 'blocked' && shop.status !== 'restricted' && (
-                        <ActionDialog
-                            trigger={
-                                <Button variant="ghost" size="icon">
-                                    <KeyRound className="h-4 w-4" />
-                                </Button>
-                            }
-                            title="Are you sure you want to restrict this shop?"
-                            description="This action will limit the shop's visibility or functionality. Please provide a reason."
-                            onAction={(reason) => handleRestrict(shop.id, reason)}
-                        />
-                    )}
-                     {shop.status !== 'blocked' ? (
-                         <ActionDialog
-                            trigger={
-                                <Button variant="ghost" size="icon" className="text-destructive">
-                                    <Ban className="h-4 w-4" />
-                                </Button>
-                            }
-                            title="Are you sure you want to block this shop?"
-                            description="This action will prevent the shop from appearing in the app. Please provide a reason."
-                            onAction={(reason) => handleBlock(shop.id, reason)}
-                            destructive
-                          />
-                      ) : (
-                        <Button variant="ghost" size="icon" onClick={() => handleUnblock(shop.id)}>
+                 <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => setViewingShop(shop)}>
+                        <Eye className="h-4 w-4" />
+                    </Button>
+                    {shop.status === 'pending' ? (
+                       <Button variant="ghost" size="icon" onClick={() => handleVerifyOpen(shop)}>
                             <CheckCircle className="h-4 w-4" />
                         </Button>
-                      )}
-                      <ActionDialog
-                        trigger={
-                            <Button variant="ghost" size="icon" className="text-destructive">
-                                <Trash2 className="h-4 w-4" />
+                    ) : (
+                        <>
+                        {shop.status !== 'blocked' && (
+                            <Button variant="ghost" size="icon" onClick={() => handleEditOpen(shop)}>
+                                <Edit className="h-4 w-4" />
                             </Button>
-                        }
-                        title="Are you absolutely sure?"
-                        description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
-                        onAction={(reason) => handleDelete(shop.id, reason)}
-                        destructive={true}
-                      />
+                        )}
+                        {shop.status !== 'blocked' && shop.status !== 'restricted' && (
+                            <ActionDialog
+                                trigger={
+                                    <Button variant="ghost" size="icon">
+                                        <KeyRound className="h-4 w-4" />
+                                    </Button>
+                                }
+                                title="Are you sure you want to restrict this shop?"
+                                description="This action will limit the shop's visibility or functionality. Please provide a reason."
+                                onAction={(reason) => handleRestrict(shop.id, reason)}
+                            />
+                        )}
+                        {shop.status !== 'blocked' ? (
+                            <ActionDialog
+                                trigger={
+                                    <Button variant="ghost" size="icon" className="text-destructive">
+                                        <Ban className="h-4 w-4" />
+                                    </Button>
+                                }
+                                title="Are you sure you want to block this shop?"
+                                description="This action will prevent the shop from appearing in the app. Please provide a reason."
+                                onAction={(reason) => handleBlock(shop.id, reason)}
+                                destructive
+                                />
+                            ) : (
+                            <Button variant="ghost" size="icon" onClick={() => handleUnblock(shop.id)}>
+                                <CheckCircle className="h-4 w-4" />
+                            </Button>
+                        )}
+                        <ActionDialog
+                            trigger={
+                                <Button variant="ghost" size="icon" className="text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            }
+                            title="Are you absolutely sure?"
+                            description="This action cannot be undone. This will permanently delete the shop. Please provide a reason."
+                            onAction={(reason) => handleDelete(shop.id, reason)}
+                            destructive={true}
+                        />
+                        </>
+                    )}
                    </div>
-                )}
               </TableCell>
             </TableRow>
           ))}
@@ -538,6 +542,42 @@ function ShopsPageContent() {
         </AlertDialogContent>
       </AlertDialog>
 
+        <Dialog open={!!viewingShop} onOpenChange={(open) => !open && setViewingShop(null)}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Shop Profile: {viewingShop?.name}</DialogTitle>
+                    <DialogDescription>
+                        Read-only view of shop details.
+                    </DialogDescription>
+                </DialogHeader>
+                {viewingShop && (
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <p><strong>Owner:</strong> {viewingShop.owner}</p>
+                            <p><strong>City:</strong> {viewingShop.city}</p>
+                            <p><strong>Status:</strong> <Badge variant={viewingShop.status === 'pending' ? 'secondary' : 'default'}>{viewingShop.status}</Badge></p>
+                            <p><strong>Verified:</strong> {viewingShop.verified ? 'Yes' : 'No'}</p>
+                        </div>
+                         <div className="space-y-2">
+                            <Label>Images</Label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="relative aspect-video rounded-md border" data-ai-hint="document image">
+                                   <Image src={viewingShop.documentUrl || "https://picsum.photos/400/300"} alt="Document" fill className="object-cover rounded-md" />
+                                   <div className="absolute bottom-0 w-full bg-black/50 text-white text-xs text-center p-1">Document</div>
+                                </div>
+                                 <div className="relative aspect-video rounded-md border" data-ai-hint="shop image">
+                                    <Image src={viewingShop.shopImageUrl || "https://picsum.photos/400/300"} alt="Shop" fill className="object-cover rounded-md" />
+                                    <div className="absolute bottom-0 w-full bg-black/50 text-white text-xs text-center p-1">Shop Front</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setViewingShop(null)}>Close</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </>
   );
 }
