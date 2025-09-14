@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "./page";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, History, Mail, Send, Wallet, XCircle, FileText, Eye } from "lucide-react";
+import { AlertCircle, History, Mail, Send, Wallet, XCircle, FileText, Eye, CheckCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,11 +43,29 @@ function StatCard({ label, value, icon: Icon }: { label: string, value: string |
     )
 }
 
+function ProfileDetailItem({ label, value, hasVerifiedIcon = false, isBadge = false, badgeVariant = "default" }: { label: string, value: string, hasVerifiedIcon?: boolean, isBadge?: boolean, badgeVariant?: any }) {
+    return (
+        <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">{label}</p>
+            {isBadge ? (
+                <Badge variant={badgeVariant}>{value}</Badge>
+            ) : (
+                <div className="flex items-center gap-2">
+                    <p>{value}</p>
+                    {hasVerifiedIcon && <CheckCircle className="h-4 w-4 text-green-500" />}
+                </div>
+            )}
+        </div>
+    )
+}
+
 export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps) {
   const router = useRouter();
   if (!user) return null;
   
   const lastLoginDate = new Date(user.lastLogin).toLocaleString();
+  const createdAtDate = new Date('2023-10-15T15:00:00Z').toLocaleString();
+
 
   const handleRideClick = (rideId: string) => {
     onOpenChange(false);
@@ -58,25 +76,30 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
     <Dialog open={!!user} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-            <div className="flex items-start gap-4">
-                <Avatar className="h-20 w-20">
+            <div className="flex items-start gap-6">
+                <Avatar className="h-24 w-24">
                     <AvatarImage src={user.profilePhotoUrl} alt={user.name} data-ai-hint="person face" />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <div className="space-y-1">
-                    <DialogTitle className="text-2xl">{user.name}</DialogTitle>
-                    <DialogDescription>{user.email}</DialogDescription>
-                    <DialogDescription>{user.phone}</DialogDescription>
-                     <div className="flex items-center gap-2 pt-1">
-                        {user.isVerified && <Badge variant="default">Verified</Badge>}
-                        {user.loyalty && <Badge variant="secondary">{user.loyalty} Tier</Badge>}
-                     </div>
+                <div className="space-y-1 pt-2">
+                    <DialogTitle className="text-3xl font-bold">{user.name}</DialogTitle>
                 </div>
             </div>
         </DialogHeader>
         
-        <div className="flex-1 overflow-y-auto pr-2">
-            <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto pr-2 pt-6">
+            <div className="space-y-8">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                    <ProfileDetailItem label="Email" value={user.email} hasVerifiedIcon />
+                    <ProfileDetailItem label="Mobile" value={user.phone} hasVerifiedIcon />
+                    <ProfileDetailItem label="Created At" value={createdAtDate} />
+                    <ProfileDetailItem label="Last Active" value={lastLoginDate} />
+                    <ProfileDetailItem label="Active Status" value="Active" isBadge badgeVariant="default" />
+                    <ProfileDetailItem label="KYC Status" value="Completed" isBadge badgeVariant="secondary" />
+                </div>
+                
+                <Separator />
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatCard label="Total Rentals" value={user.totalRentals} icon={History} />
                     <StatCard label="Cancellations" value={user.cancellations} icon={XCircle} />
@@ -87,12 +110,12 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
                 <Separator />
                 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                     <div>
                         <h4 className="font-semibold text-lg mb-2">User Details</h4>
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-muted-foreground">Last Login:</span>
-                                <span>{lastLoginDate}</span>
+                                <span className="text-muted-foreground">Loyalty Tier:</span>
+                                <span>{user.loyalty ? <Badge variant="secondary">{user.loyalty} Tier</Badge> : 'N/A'}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-muted-foreground">Most Rented City:</span>
