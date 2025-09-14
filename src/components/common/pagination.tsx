@@ -22,36 +22,56 @@ export function Pagination({ currentPage, totalCount, pageSize, path }: Paginati
   }
   
   const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
     const params = new URLSearchParams(searchParams);
     params.set('page', page.toString());
     router.push(`${path}?${params.toString()}`);
   };
 
+  const pageNumbers = [];
+  for(let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalCount);
+
   return (
-    <div className="flex items-center justify-end space-x-2 py-4">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handlePageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-      >
-        <ChevronLeft className="h-4 w-4" />
-        Previous
-      </Button>
-      <div className="text-sm font-medium">
-        Page {currentPage} of {totalPages}
+    <div className="flex items-center justify-between py-4">
+      <div className="text-sm text-muted-foreground">
+        Showing {startItem} to {endItem} of {totalCount} results
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => handlePageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-      >
-        Next
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center space-x-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        
+        {pageNumbers.map(number => (
+            <Button
+                key={number}
+                variant={currentPage === number ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePageChange(number)}
+                className="w-9"
+            >
+                {number}
+            </Button>
+        ))}
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
-
-    
