@@ -367,7 +367,7 @@ function UsersPageContent() {
                                         </Button>
                                     ) : (
                                         <Button variant="ghost" size="icon" onClick={() => handleVerificationChange(user.id, true)}>
-                                            <CheckCircle className="h-4 w-4" />
+                                            <CheckCircle className="h-4 w-4 text-green-500" />
                                         </Button>
                                     )}
 
@@ -385,7 +385,7 @@ function UsersPageContent() {
                                         />
                                     ) : (
                                         <Button variant="ghost" size="icon" onClick={() => handleUnblock(user.id)}>
-                                            <CheckCircle className="h-4 w-4" />
+                                            <CheckCircle className="h-4 w-4 text-green-500" />
                                         </Button>
                                     )}
                                     <ActionDialog
@@ -462,5 +462,3 @@ export default function UsersPage() {
         </React.Suspense>
     )
 }
-
-    
