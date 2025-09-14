@@ -46,7 +46,7 @@ export function LoginForm() {
                     <div className="flex justify-center items-center mb-4">
                         <Car className="h-10 w-10 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl">SawariKaro Admin</CardTitle>
+                    <CardTitle className="text-2xl">Login to your SawariKaro</CardTitle>
                     <CardDescription>Enter your credentials to access the dashboard</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
