@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
-import { SidebarProvider, Sidebar as RootSidebar, SidebarHeader, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
+import { Sidebar as RootSidebar, SidebarHeader, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
 import { Navbar } from './navbar';
 import { Nav } from './nav';
 import { Logo } from '../common/logo';
 
 export function Sidebar({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider>
+    <>
       <RootSidebar>
         <SidebarHeader>
           <Logo />
@@ -21,6 +21,6 @@ export function Sidebar({ children }: { children: ReactNode }) {
           {children}
         </main>
       </SidebarInset>
-    </SidebarProvider>
+    </>
   );
 }
