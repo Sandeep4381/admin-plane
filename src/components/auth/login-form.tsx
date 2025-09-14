@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { useToast } from '@/hooks/use-toast';
 import { Car, Loader2, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { Logo } from '../common/logo';
 
 export function LoginForm() {
     const router = useRouter();
@@ -44,7 +45,7 @@ export function LoginForm() {
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
                     <div className="flex justify-center items-center mb-4">
-                        <Car className="h-10 w-10 text-primary" />
+                        <Logo />
                     </div>
                     <CardTitle className="text-2xl">Login to your SawariKaro</CardTitle>
                     <CardDescription>Enter your credentials to access the dashboard</CardDescription>
