@@ -223,6 +223,14 @@ function UsersPageContent() {
         description: `An email and SMS notification has been sent to the user.`,
     });
   };
+
+  const handleStatusChange = (userId: string, active: boolean) => {
+    setUsers(users.map(user => user.id === userId ? { ...user, status: active ? 'active' : 'inactive' } : user));
+    toast({
+        title: `User status updated`,
+        description: `User is now ${active ? 'active' : 'inactive'}.`,
+    });
+  }
   
   const filteredUsers = useMemo(() => {
     let results = users;
@@ -349,9 +357,14 @@ function UsersPageContent() {
                             ) : 0}</TableCell>
                             <TableCell>₹{user.lifetimeSpend.toLocaleString()}</TableCell>
                             <TableCell>
-                            <Badge variant={user.status === 'active' ? 'default' : user.status === 'blocked' ? 'destructive' : 'secondary'}>
-                                {user.status}
-                            </Badge>
+                                {user.status === 'blocked' ? (
+                                    <Badge variant="destructive">Blocked</Badge>
+                                ) : (
+                                    <Switch
+                                        checked={user.status === 'active'}
+                                        onCheckedChange={(checked) => handleStatusChange(user.id, checked)}
+                                    />
+                                )}
                             </TableCell>
                             <TableCell className="text-center">
                                 <div className="flex items-center justify-center gap-2">
