@@ -1,4 +1,3 @@
-
 "use client"
 import {
   Dialog,
@@ -13,8 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User } from "./page";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, History, Mail, Send, Wallet, XCircle, FileText } from "lucide-react";
+import { AlertCircle, History, Mail, Send, Wallet, XCircle, FileText, Eye } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 
 
 type UserProfileDialogProps = {
@@ -43,13 +44,19 @@ function StatCard({ label, value, icon: Icon }: { label: string, value: string |
 }
 
 export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps) {
+  const router = useRouter();
   if (!user) return null;
   
   const lastLoginDate = new Date(user.lastLogin).toLocaleString();
 
+  const handleRideClick = (rideId: string) => {
+    onOpenChange(false);
+    router.push(`/rentals?search=${rideId}`);
+  }
+
   return (
     <Dialog open={!!user} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
             <div className="flex items-start gap-4">
                 <Avatar className="h-20 w-20">
@@ -78,34 +85,8 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
                 </div>
                 
                 <Separator />
-
-                <div>
-                    <h4 className="font-semibold text-lg mb-2">Top 5 Rides</h4>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Ride ID</TableHead>
-                                <TableHead>Vehicle</TableHead>
-                                <TableHead>Shop</TableHead>
-                                <TableHead>Date</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {topRides.map((ride) => (
-                                <TableRow key={ride.id}>
-                                    <TableCell>{ride.id}</TableCell>
-                                    <TableCell>{ride.vehicle}</TableCell>
-                                    <TableCell>{ride.shop}</TableCell>
-                                    <TableCell>{ride.date}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                <Separator />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <h4 className="font-semibold text-lg mb-2">User Details</h4>
                         <div className="space-y-2 text-sm">
@@ -127,6 +108,65 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
                         </div>
                     </div>
                 </div>
+                
+                <Separator />
+
+                <div>
+                    <h4 className="font-semibold text-lg mb-2">Documents</h4>
+                    <p className="text-sm text-muted-foreground mb-4">User's identification documents.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card>
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div>
+                                    <p className="font-semibold">Aadhaar Card</p>
+                                    <p className="text-sm text-muted-foreground font-mono">****-****-1234</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button>
+                                    <Button variant="outline">View</Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardContent className="p-4 flex items-center justify-between">
+                                <div>
+                                    <p className="font-semibold">PAN Card</p>
+                                    <p className="text-sm text-muted-foreground font-mono">*****234F</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="ghost" size="icon"><Eye className="h-4 w-4" /></Button>
+                                    <Button variant="outline">View</Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                <Separator />
+                
+                <div>
+                    <h4 className="font-semibold text-lg mb-2">Top 5 Rides</h4>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Ride ID</TableHead>
+                                <TableHead>Vehicle</TableHead>
+                                <TableHead>Shop</TableHead>
+                                <TableHead>Date</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {topRides.map((ride) => (
+                                <TableRow key={ride.id} onClick={() => handleRideClick(ride.id)} className="cursor-pointer">
+                                    <TableCell>{ride.id}</TableCell>
+                                    <TableCell>{ride.vehicle}</TableCell>
+                                    <TableCell>{ride.shop}</TableCell>
+                                    <TableCell>{ride.date}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
 
             </div>
         </div>
@@ -136,7 +176,6 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
             <div className="flex gap-2">
                 <Button size="sm"><Send className="mr-2 h-4 w-4"/>Send Push</Button>
                 <Button size="sm" variant="outline"><Mail className="mr-2 h-4 w-4"/>Send Email</Button>
-                <Button size="sm" variant="outline"><FileText className="mr-2 h-4 w-4"/>View Document</Button>
             </div>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
           </div>
@@ -145,4 +184,3 @@ export function UserProfileDialog({ user, onOpenChange }: UserProfileDialogProps
     </Dialog>
   );
 }
-
