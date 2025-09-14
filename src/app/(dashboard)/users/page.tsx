@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { UserProfileDialog } from './user-profile-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination } from '@/components/common/pagination';
+import { Switch } from '@/components/ui/switch';
 
 
 export type User = {
@@ -337,7 +338,7 @@ function UsersPageContent() {
                                 <div className="text-sm text-muted-foreground">{user.phone}</div>
                             </TableCell>
                              <TableCell>
-                                <Checkbox 
+                                <Switch 
                                     checked={user.isVerified} 
                                     onCheckedChange={(checked) => handleVerificationChange(user.id, !!checked)}
                                 />
@@ -357,20 +358,7 @@ function UsersPageContent() {
                                     <Button variant="ghost" size="icon" onClick={() => setViewingUser(user)}>
                                         <Eye className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" onClick={() => handleEditOpen(user)}>
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
                                     
-                                    {user.isVerified ? (
-                                        <Button variant="ghost" size="icon" onClick={() => handleVerificationChange(user.id, false)}>
-                                            <XCircle className="h-4 w-4" />
-                                        </Button>
-                                    ) : (
-                                        <Button variant="ghost" size="icon" onClick={() => handleVerificationChange(user.id, true)}>
-                                            <CheckCircle className="h-4 w-4 text-green-500" />
-                                        </Button>
-                                    )}
-
                                     {user.status !== 'blocked' ? (
                                         <ActionDialog
                                             trigger={
